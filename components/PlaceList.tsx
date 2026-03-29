@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { Member, Place, PlaceType } from '@/lib/types';
+import { MemberGlyph, PlaceTypeGlyph, normalizePlaceTypeId } from './IconSystem';
 
 type Props = {
   places: Place[];
@@ -8,62 +9,55 @@ type Props = {
   placeTypes: PlaceType[];
   selectedPlaceId?: string;
   onSelectPlace: (placeId: string) => void;
+  emptyText: string;
 };
 
-export default function PlaceList({ places, members, placeTypes, selectedPlaceId, onSelectPlace }: Props) {
+export default function PlaceList({ places, members, placeTypes, selectedPlaceId, onSelectPlace, emptyText }: Props) {
   const memberMap = new Map(members.map((m) => [m.id, m.displayName]));
-  const typeMap = new Map(placeTypes.map((t) => [t.id, t.label]));
+  const typeMap = new Map(placeTypes.map((t) => [normalizePlaceTypeId(t.id), t.label]));
 
   if (!places.length) {
-    return (
-      <div className="soft-card p-6 text-sm text-[#60755d]">
-        没有匹配的地点，试试减少筛选条件或更换关键词。
-      </div>
-    );
+    return <div className="paper-panel p-5 text-sm text-[#60755d]">{emptyText}</div>;
   }
 
   return (
-    <div className="space-y-3">
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
       {places.map((place, idx) => {
         const active = place.id === selectedPlaceId;
+        const typeId = normalizePlaceTypeId(place.placeTypeId);
         return (
           <button
             key={place.id}
             onClick={() => onSelectPlace(place.id)}
             type="button"
-            className={`w-full rounded-[20px] border text-left transition-all duration-200 ${
-              active
-                ? 'border-[#9dd670] bg-[#f6fde9] shadow-[0_14px_26px_rgba(143,203,105,0.26)]'
-                : 'border-[#dde9d1] bg-[#fbfdf7] hover:-translate-y-0.5 hover:border-[#cadfb6] hover:shadow-[0_10px_24px_rgba(74,98,70,0.12)]'
-            }`}
+            className={`polaroid-card text-left ${active ? 'is-active' : ''}`}
           >
-            <div className="grid grid-cols-[58px_1fr] gap-3 p-3.5">
-              <div className="flex flex-col items-center gap-2 pt-0.5">
-                <span className="text-[10px] font-semibold tracking-[0.16em] text-[#6d8465]">{String(idx + 1).padStart(2, '0')}</span>
-                <img src={place.images[0]} alt={place.englishName} className="h-12 w-12 rounded-xl object-cover" />
-              </div>
+            <div className="polaroid-top">
+              <img src={place.images[0]} alt={place.englishName} className="h-24 w-full rounded-md object-cover" />
+            </div>
 
+            <div className="mt-3 flex items-start justify-between gap-2">
               <div>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="hero-serif text-[22px] leading-6 text-[#233022]">{place.englishName}</p>
-                    <p className="mt-0.5 text-xs text-[#62775d]">{place.koreanName}</p>
-                  </div>
-                  <span className="rounded-full border border-[#d2e4c4] bg-[#f0f8e7] px-2 py-1 text-[10px] uppercase tracking-[0.1em] text-[#5f7657]">
-                    {typeMap.get(place.placeTypeId)}
-                  </span>
-                </div>
-
-                <p className="mt-2 line-clamp-1 text-xs text-[#5f755a]">{place.englishAddress}</p>
-
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {place.memberIds.slice(0, 3).map((id) => (
-                    <span key={id} className="rounded-full bg-[#ecf7df] px-2 py-1 text-[11px] text-[#3f5438]">
-                      {memberMap.get(id)}
-                    </span>
-                  ))}
-                </div>
+                <p className="text-[11px] tracking-[0.14em] text-[#6f8367]">No.{String(idx + 1).padStart(2, '0')}</p>
+                <p className="hero-serif text-[23px] leading-6 text-[#243122]">{place.englishName}</p>
+                <p className="text-xs text-[#62765c]">{place.koreanName}</p>
               </div>
+              <span className="tag-chip">
+                <PlaceTypeGlyph placeTypeId={typeId} className="h-3.5 w-3.5" />
+                {typeMap.get(typeId)}
+              </span>
+            </div>
+
+            <p className="mt-2 line-clamp-1 text-xs text-[#5d7458]">{place.englishAddress}</p>
+            <p className="mt-2 line-clamp-2 text-xs text-[#4f664a]">{place.description}</p>
+
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {place.memberIds.slice(0, 4).map((id) => (
+                <span key={id} className="sticker-chip small">
+                  <MemberGlyph memberId={id} className="h-3 w-3" />
+                  {memberMap.get(id)}
+                </span>
+              ))}
             </div>
           </button>
         );

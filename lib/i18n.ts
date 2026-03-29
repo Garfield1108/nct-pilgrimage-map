@@ -4,7 +4,9 @@ export const LOCALE_STORAGE_KEY = 'nct-ui-locale';
 
 export const uiText = {
   zh: {
-    subtitle: '以首尔为舞台，记录属于 NCTzen 的巡礼路线。',
+    subtitle: 'Seoul spots, memories, and fan routes.',
+    headerTitle: 'NCT Pilgrimage Archive',
+    headerNote: '把喜欢的地点贴进你的巡礼手账。',
     searchPlaceholder: 'Search places or areas',
     members: '成员筛选',
     placeType: '地点类型',
@@ -12,6 +14,7 @@ export const uiText = {
     mapView: '地图探索',
     wantToGo: '想去',
     visited: '已打卡',
+    visitedSoon: '已打卡（开发中）',
     destination: '地点详情',
     fanCheckins: '用户打卡',
     addCheckin: '上传打卡',
@@ -22,6 +25,7 @@ export const uiText = {
     routeList: '收藏地点列表',
     routeMapTitle: '我的巡礼地图',
     routeMapSubtitle: '你的巡礼路线正在成形。',
+    routeHint: '你的收藏正在连成一条路线。',
     generateCard: '生成巡礼卡片',
     downloadCard: '下载卡片',
     cardReady: '卡片已生成，可下载或分享。',
@@ -31,6 +35,13 @@ export const uiText = {
     duplicateWarn: '你刚刚在这个地点打过卡，是否继续提交？',
     submitting: '提交中...',
     uploadAction: '上传打卡',
+    language: '语言',
+    localeZh: '中文 CN',
+    localeEn: 'English EN',
+    mapBoardTitle: 'Seoul Pilgrimage Map',
+    mapBoardNote: 'Fan Archive Sheet',
+    collectionTitle: '地点收藏册',
+    collectionEmpty: '没有匹配地点，试试减少筛选或更换关键词。',
     moodTagLabels: {
       hot: 'Hot',
       classic: 'Classic',
@@ -45,7 +56,9 @@ export const uiText = {
     }
   },
   en: {
-    subtitle: 'A Seoul stage for fan pilgrimage routes and memory logs.',
+    subtitle: 'Seoul spots, memories, and fan routes.',
+    headerTitle: 'NCT Pilgrimage Archive',
+    headerNote: 'Pin your favorite spots into a living fan scrapbook.',
     searchPlaceholder: 'Search places or areas',
     members: 'Members',
     placeType: 'Place type',
@@ -53,6 +66,7 @@ export const uiText = {
     mapView: 'Explore',
     wantToGo: 'Want to go',
     visited: 'Visited',
+    visitedSoon: 'Visited (Coming soon)',
     destination: 'Destination',
     fanCheckins: 'Fan check-ins',
     addCheckin: 'Add check-in',
@@ -63,6 +77,7 @@ export const uiText = {
     routeList: 'Saved spots',
     routeMapTitle: 'My Pilgrimage Map',
     routeMapSubtitle: 'Your pilgrimage is taking shape.',
+    routeHint: 'Your saved spots are forming a route.',
     generateCard: 'Generate Pilgrimage Card',
     downloadCard: 'Download Card',
     cardReady: 'Card generated. Save it or share it.',
@@ -72,6 +87,13 @@ export const uiText = {
     duplicateWarn: 'You just checked in here. Submit again?',
     submitting: 'Submitting...',
     uploadAction: 'Add check-in',
+    language: 'Language',
+    localeZh: '中文 CN',
+    localeEn: 'English EN',
+    mapBoardTitle: 'Seoul Pilgrimage Map',
+    mapBoardNote: 'Fan Archive Sheet',
+    collectionTitle: 'Spot Collection',
+    collectionEmpty: 'No matching spots. Try fewer filters or another keyword.',
     moodTagLabels: {
       hot: 'Hot',
       classic: 'Classic',
@@ -97,4 +119,3 @@ export function setStoredLocale(locale: Locale) {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
 }
-

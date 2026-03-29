@@ -59,29 +59,25 @@ export default function CheckInForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 panel-fade">
-      <p className="text-[11px] uppercase tracking-[0.16em] text-[#647b5f]">{title}</p>
+      <p className="paper-kicker">{title}</p>
       <input
         type="file"
         accept="image/*"
         multiple
         onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-        className="block w-full rounded-2xl border border-[#d7e6c9] bg-[#f8fcf3] p-2 text-xs text-[#4a6144]"
+        className="paper-input block w-full p-2 text-xs"
       />
       <textarea
         value={note}
         onChange={(e) => setNote(e.target.value.slice(0, 200))}
         placeholder={hint}
         rows={3}
-        className="w-full rounded-2xl border border-[#d7e6c9] bg-[#f8fcf3] px-3 py-2 text-sm text-[#2b3827] outline-none transition focus:border-[#9ad26f] focus:ring-2 focus:ring-[#b7ff7a]/35"
+        className="paper-input w-full px-3 py-2 text-sm outline-none"
       />
 
-      {error ? <p className="text-xs text-red-500">{error}</p> : null}
+      {error ? <p className="text-xs text-[#9c3b3b]">{error}</p> : null}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded-full border border-[#8dbb6f] bg-[#a8ff60] px-5 py-2 text-sm font-semibold text-[#22301f] transition hover:bg-[#98f56b]"
-      >
+      <button type="submit" disabled={loading} className="paper-button-primary">
         {loading ? submittingText : submitText}
       </button>
     </form>
