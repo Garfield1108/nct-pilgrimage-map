@@ -36,7 +36,7 @@ export default function FilterPanel({
   };
 
   return (
-    <div className="paper-filter-stack">
+    <div className="paper-filter-stack collage-filter">
       <div className="relative">
         <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#6a7f64]">
           <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -44,25 +44,20 @@ export default function FilterPanel({
             <path d="M13 13l4 4" />
           </svg>
         </span>
-        <input
-          value={filters.keyword}
-          onChange={onSearchChange}
-          placeholder={searchPlaceholder}
-          className="paper-search-input"
-        />
+        <input value={filters.keyword} onChange={onSearchChange} placeholder={searchPlaceholder} className="paper-search-input" />
       </div>
 
-      <div className="space-y-2">
-        <p className="paper-kicker">{membersLabel}</p>
+      <div className="scrap-section">
+        <p className="paper-kicker lined-label">{membersLabel}</p>
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {members.map((member) => {
+          {members.map((member, idx) => {
             const active = filters.memberIds.includes(member.id);
             return (
               <button
                 key={member.id}
                 type="button"
                 onClick={() => toggleItem('memberIds', member.id)}
-                className={`sticker-filter ${active ? 'active' : ''}`}
+                className={`sticker-filter tab-${idx % 4} ${active ? 'active' : ''}`}
               >
                 <MemberGlyph memberId={member.id} className="h-4 w-4" />
                 {member.displayName}
@@ -72,10 +67,10 @@ export default function FilterPanel({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <p className="paper-kicker">{placeTypeLabel}</p>
+      <div className="scrap-section">
+        <p className="paper-kicker lined-label">{placeTypeLabel}</p>
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {placeTypes.map((type) => {
+          {placeTypes.map((type, idx) => {
             const normalizedId = normalizePlaceTypeId(type.id);
             const active = filters.placeTypeIds.includes(type.id);
             const label = placeTypeTextMap[normalizedId] ?? type.label;
@@ -84,7 +79,7 @@ export default function FilterPanel({
                 key={type.id}
                 type="button"
                 onClick={() => toggleItem('placeTypeIds', type.id)}
-                className={`sticker-filter ${active ? 'active' : ''}`}
+                className={`sticker-filter tab-${idx % 4} ${active ? 'active' : ''}`}
               >
                 <PlaceTypeGlyph placeTypeId={normalizedId} className="h-4 w-4" />
                 {label}

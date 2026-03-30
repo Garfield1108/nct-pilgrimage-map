@@ -14,28 +14,36 @@ type LeafletMapProps = {
   onSelectPlace?: (placeId: string) => void;
   activeMemberId: string | null;
   favoritePlaceIds: string[];
+  visitedPlaceIds: string[];
   routePlaceIds: string[];
   showRouteLine: boolean;
+  memberNameMap: Record<string, string>;
+  placeTypeTextMap: Record<string, string>;
+  popupMembersLabel: string;
+  popupTypeLabel: string;
+  viewSpotLabel: string;
 };
 
 function createMarkerIcon(
   active: boolean,
   activeMemberId: string | null,
   placeTypeId: string,
-  favorited: boolean
-){
+  favorited: boolean,
+  visited: boolean
+) {
   const iconStroke = active ? '#ffffff' : '#1f2a1f';
   const glyph = activeMemberId
     ? memberGlyphSvgString(activeMemberId, iconStroke)
     : placeTypeGlyphSvgString(normalizePlaceTypeId(placeTypeId), iconStroke);
 
-  const badge = favorited ? '<span class="favorite-badge">★</span>' : '';
+  const favoriteBadge = favorited ? '<span class="favorite-badge">★</span>' : '';
+  const visitedBadge = visited ? '<span class="visited-badge">✓</span>' : '';
 
   return L.divIcon({
     className: '',
-    html: `<div class="map-marker-shell ${active ? 'selected' : ''} ${favorited ? 'favorited' : ''}"><span class="map-marker-glyph">${glyph}</span>${badge}</div>`,
-    iconSize: active ? [34, 34] : [30, 30],
-    iconAnchor: active ? [17, 17] : [15, 15]
+    html: `<div class="map-marker-shell ${active ? 'selected' : ''} ${favorited ? 'favorited' : ''} ${visited ? 'visited' : ''}"><span class="map-marker-glyph">${glyph}</span>${favoriteBadge}${visitedBadge}</div>`,
+    iconSize: active ? [36, 36] : [31, 31],
+    iconAnchor: active ? [18, 18] : [16, 16]
   });
 }
 
@@ -55,8 +63,8 @@ function MapFocusController({ selectedPlace }: { selectedPlace?: Place }) {
 
 function miniGlyphHtml(activeMemberId: string | null, placeTypeId: string): string {
   const glyph = activeMemberId
-    ? memberGlyphSvgString(activeMemberId, '#354a30')
-    : placeTypeGlyphSvgString(normalizePlaceTypeId(placeTypeId), '#354a30');
+    ? memberGlyphSvgString(activeMemberId, '#385030')
+    : placeTypeGlyphSvgString(normalizePlaceTypeId(placeTypeId), '#385030');
   return `<span class="popup-mini-glyph">${glyph}</span>`;
 }
 
@@ -66,8 +74,14 @@ export default function LeafletMap({
   onSelectPlace,
   activeMemberId,
   favoritePlaceIds,
+  visitedPlaceIds,
   routePlaceIds,
-  showRouteLine
+  showRouteLine,
+  memberNameMap,
+  placeTypeTextMap,
+  popupMembersLabel,
+  popupTypeLabel,
+  viewSpotLabel
 }: LeafletMapProps) {
   const selectedPlace = useMemo(
     () => places.find((place) => place.id === selectedPlaceId),
@@ -80,7 +94,7 @@ export default function LeafletMap({
     return routePlaceIds
       .map((id) => placeMap.get(id))
       .filter(Boolean)
-      .map((p) => [p!.latitude, p!.longitude]) as [number, number][];
+      .map((p) => [p.latitude, p.longitude]) as [number, number][];
   }, [places, routePlaceIds, showRouteLine]);
 
   const initialCenter: [number, number] = selectedPlace
@@ -98,7 +112,7 @@ export default function LeafletMap({
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; CARTO'
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        opacity={0.84}
+        opacity={0.9}
       />
 
       <MapFocusController selectedPlace={selectedPlace} />
@@ -107,10 +121,10 @@ export default function LeafletMap({
         <Polyline
           positions={routePolyline}
           pathOptions={{
-            color: '#6c9f53',
+            color: '#6a9c50',
             weight: 2,
-            opacity: 0.65,
-            dashArray: '5,7',
+            opacity: 0.72,
+            dashArray: '3,6',
             lineCap: 'round',
             lineJoin: 'round'
           }}
@@ -121,23 +135,40 @@ export default function LeafletMap({
       {places.map((place) => {
         const active = place.id === selectedPlaceId;
         const favorited = favoritePlaceIds.includes(place.id);
+        const visited = visitedPlaceIds.includes(place.id);
+        const shortMembers = place.memberIds.slice(0, 2).map((id) => memberNameMap[id]).filter(Boolean);
+        const placeTypeId = normalizePlaceTypeId(place.placeTypeId);
+
         return (
           <Marker
             key={place.id}
             position={[place.latitude, place.longitude]}
-            icon={createMarkerIcon(active, activeMemberId, place.placeTypeId, favorited)}
-            eventHandlers={{
-              click: () => onSelectPlace?.(place.id)
-            }}
+            icon={createMarkerIcon(active, activeMemberId, placeTypeId, favorited, visited)}
+            eventHandlers={{ click: () => onSelectPlace?.(place.id) }}
           >
-            <Popup className="custom-popup hint-popup" autoPan>
-              <div className="inline-flex items-center gap-1.5">
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: miniGlyphHtml(activeMemberId, place.placeTypeId)
-                  }}
-                />
-                <p className="popup-title">{place.englishName}</p>
+            <Popup className="custom-popup memo-popup" autoPan>
+              <div className="memo-popup-card">
+                <div className="memo-popup-title">
+                  <span dangerouslySetInnerHTML={{ __html: miniGlyphHtml(activeMemberId, placeTypeId) }} />
+                  <p>{place.englishName}</p>
+                </div>
+
+                <p className="memo-popup-desc">{place.description}</p>
+
+                <div className="memo-popup-tags">
+                  <span className="memo-popup-tag">
+                    {popupTypeLabel}: {placeTypeTextMap[placeTypeId] ?? placeTypeId}
+                  </span>
+                  {shortMembers.length ? (
+                    <span className="memo-popup-tag">
+                      {popupMembersLabel}: {shortMembers.join(', ')}
+                    </span>
+                  ) : null}
+                </div>
+
+                <button type="button" className="memo-popup-btn" onClick={() => onSelectPlace?.(place.id)}>
+                  {viewSpotLabel}
+                </button>
               </div>
             </Popup>
           </Marker>
@@ -146,8 +177,3 @@ export default function LeafletMap({
     </MapContainer>
   );
 }
-
-
-
-
-

@@ -2,37 +2,37 @@
 
 type Props = {
   isFavorite: boolean;
+  visited: boolean;
   onToggleFavorite: () => void;
+  onToggleVisited: () => void;
   wantLabel: string;
-  visitedSoonLabel: string;
+  visitedLabel: string;
 };
 
 export default function WantVisitedButtons({
   isFavorite,
+  visited,
   onToggleFavorite,
+  onToggleVisited,
   wantLabel,
-  visitedSoonLabel
+  visitedLabel
 }: Props) {
   return (
     <div className="flex flex-wrap gap-2">
       <button
         type="button"
         onClick={onToggleFavorite}
-        className={`paper-button-primary ${
-          isFavorite ? 'ring-2 ring-[#8fcc60]/40' : ''
-        }`}
+        className={`paper-action-btn save-btn ${isFavorite ? 'active' : 'inactive'}`}
       >
         {wantLabel}
       </button>
 
       <button
         type="button"
-        disabled
-        aria-disabled="true"
-        className="paper-button-muted"
-        title={visitedSoonLabel}
+        onClick={onToggleVisited}
+        className={`paper-action-btn visited-btn ${visited ? 'active' : 'inactive'}`}
       >
-        {visitedSoonLabel}
+        {visitedLabel}
       </button>
     </div>
   );
