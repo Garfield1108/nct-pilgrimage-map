@@ -70,34 +70,3 @@ export type CreateCheckInInput = {
   note?: string;
   files: File[];
 };
-
-export type PlaceSubmissionStatus = 'pending-review';
-
-export type PlaceSubmission = {
-  id: string;
-  sessionId: string;
-  placeName: string;
-  latitude: number;
-  longitude: number;
-  memberIds: string[];
-  placeTypeId: string;
-  relationNote: string;
-  sourceLink?: string;
-  extraNote?: string;
-  imageRefs: string[];
-  status: PlaceSubmissionStatus;
-  createdAt: string;
-};
-
-export type CreatePlaceSubmissionInput = {
-  sessionId: string;
-  placeName: string;
-  latitude: number;
-  longitude: number;
-  memberIds: string[];
-  placeTypeId: string;
-  relationNote: string;
-  sourceLink?: string;
-  extraNote?: string;
-  files: File[];
-};

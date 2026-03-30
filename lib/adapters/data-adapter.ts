@@ -2,7 +2,6 @@
 import { filterPlaces } from '../filters';
 import {
   createCheckIn,
-  createPlaceSubmission,
   getFavoritePlaceIds,
   getUserPlaceStates,
   listCheckIns,
@@ -13,12 +12,10 @@ import {
 } from '../storage';
 import {
   CreateCheckInInput,
-  CreatePlaceSubmissionInput,
   DisplayCheckIn,
   Member,
   Place,
   PlaceFilters,
-  PlaceSubmission,
   PlaceType,
   UserPlaceState
 } from '../types';
@@ -28,14 +25,13 @@ export type DataAdapter = {
   getPlaceTypes: () => Promise<PlaceType[]>;
   getPlaces: (filters: PlaceFilters) => Promise<Place[]>;
   getPlaceById: (placeId: string) => Promise<Place | undefined>;
-  getCheckIns: (placeId: string) => Promise<DisplayCheckIn[]>;
+  getCheckIns: (placeId: string, sessionId?: string) => Promise<DisplayCheckIn[]>;
   createCheckIn: (input: CreateCheckInInput) => Promise<DisplayCheckIn>;
   shouldWarnDuplicate: (sessionId: string, placeId: string) => Promise<boolean>;
   getUserPlaceStates: (sessionId: string) => Promise<UserPlaceState[]>;
   toggleVisited: (sessionId: string, placeId: string) => Promise<UserPlaceState[]>;
   getFavoritePlaceIds: () => Promise<string[]>;
   toggleFavoritePlaceId: (placeId: string) => Promise<string[]>;
-  createPlaceSubmission: (input: CreatePlaceSubmissionInput) => Promise<PlaceSubmission>;
 };
 
 export const mockAdapter: DataAdapter = {
@@ -55,8 +51,8 @@ export const mockAdapter: DataAdapter = {
     return places.find((p) => p.id === placeId);
   },
 
-  async getCheckIns(placeId: string) {
-    const items = await listCheckIns(placeId);
+  async getCheckIns(placeId: string, sessionId?: string) {
+    const items = await listCheckIns(placeId, sessionId);
     return toDisplayCheckIns(items);
   },
 
@@ -86,9 +82,5 @@ export const mockAdapter: DataAdapter = {
 
   async toggleFavoritePlaceId(placeId: string) {
     return toggleFavoritePlaceId(placeId);
-  },
-
-  async createPlaceSubmission(input: CreatePlaceSubmissionInput) {
-    return createPlaceSubmission(input);
   }
 };

@@ -2,16 +2,14 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import CheckInForm from '@/components/CheckInForm';
 import FilterPanel from '@/components/FilterPanel';
 import PlaceDetailPanel from '@/components/PlaceDetailPanel';
 import PlaceList from '@/components/PlaceList';
-import SubmitPlaceForm from '@/components/SubmitPlaceForm';
 import { normalizePlaceTypes } from '@/components/IconSystem';
 import { getDataAdapter } from '@/lib/adapters';
 import { getStoredLocale, Locale, setStoredLocale, uiText } from '@/lib/i18n';
 import { getSessionId } from '@/lib/storage';
-import { CreatePlaceSubmissionInput, DisplayCheckIn, Member, Place, PlaceFilters, PlaceType, UserPlaceState } from '@/lib/types';
+import { DisplayCheckIn, Member, Place, PlaceFilters, PlaceType, UserPlaceState } from '@/lib/types';
 
 const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
   ssr: false
@@ -40,7 +38,6 @@ export default function HomePage() {
   const [checkIns, setCheckIns] = useState<DisplayCheckIn[]>([]);
   const [states, setStates] = useState<UserPlaceState[]>([]);
   const [favoritePlaceIds, setFavoritePlaceIds] = useState<string[]>([]);
-  const [submitPlaceOpen, setSubmitPlaceOpen] = useState(false);
   const detailPanelRef = useRef<HTMLDivElement>(null);
 
   const t = uiText[locale];
@@ -109,15 +106,15 @@ export default function HomePage() {
 
   useEffect(() => {
     const loadCheckins = async () => {
-      if (!selectedPlaceId) {
+      if (!selectedPlaceId || !sessionId) {
         setCheckIns([]);
         return;
       }
-      setCheckIns(await adapter.getCheckIns(selectedPlaceId));
+      setCheckIns(await adapter.getCheckIns(selectedPlaceId, sessionId));
     };
 
     void loadCheckins();
-  }, [selectedPlaceId]);
+  }, [selectedPlaceId, sessionId]);
 
   const selectedPlace = useMemo(() => visiblePlaces.find((p) => p.id === selectedPlaceId), [visiblePlaces, selectedPlaceId]);
 
@@ -184,14 +181,6 @@ export default function HomePage() {
     return { warned: false };
   };
 
-  const onSubmitPlace = async (input: Omit<CreatePlaceSubmissionInput, 'sessionId'>) => {
-    if (!sessionId) {
-      throw new Error('Please refresh the page and try again.');
-    }
-
-    await adapter.createPlaceSubmission({ ...input, sessionId });
-  };
-
   return (
     <main className="archive-page mx-auto max-w-[1680px] px-4 pb-8 pt-4 md:px-8 md:pt-5">
       <section className="archive-header compact-header mb-3">
@@ -235,115 +224,63 @@ export default function HomePage() {
         />
       </section>
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="space-y-3">
-          <div className="paper-panel map-board p-3">
-            <div className="mb-2 flex items-center justify-between px-1">
-              <h3 className="hero-serif text-[27px] leading-none text-[#263223]">
-                {viewMode === 'all' ? t.mapBoardTitle : t.myPilgrimageTitle}
-              </h3>
-            </div>
-
-            <div className="h-[64vh] min-h-[480px] overflow-hidden rounded-[22px] border border-[#d2dfc6] bg-[#f8fbf4]">
-              <LeafletMap
-                places={visiblePlaces}
-                selectedPlaceId={selectedPlaceId}
-                onSelectPlace={setSelectedPlaceId}
-                activeMemberId={activeMemberForMap}
-                favoritePlaceIds={favoritePlaceIds}
-                visitedPlaceIds={visitedPlaceIds}
-                routePlaceIds={myPilgrimagePlaces.map((p) => p.id)}
-                showRouteLine={viewMode === 'route'}
-                memberNameMap={memberNameMap}
-                placeTypeTextMap={t.placeTypeLabels}
-                popupMembersLabel={t.popupTagMembers}
-                popupTypeLabel={t.popupTagType}
-              />
-            </div>
+      <section className="map-led-stage paper-panel p-3">
+        <div className="map-canvas-wrap">
+          <div className="h-[70vh] min-h-[520px] overflow-hidden rounded-[22px] border border-[#d2dfc6] bg-[#f8fbf4]">
+            <LeafletMap
+              places={visiblePlaces}
+              selectedPlaceId={selectedPlaceId}
+              onSelectPlace={setSelectedPlaceId}
+              activeMemberId={activeMemberForMap}
+              favoritePlaceIds={favoritePlaceIds}
+              visitedPlaceIds={visitedPlaceIds}
+              routePlaceIds={myPilgrimagePlaces.map((p) => p.id)}
+              showRouteLine={viewMode === 'route'}
+              memberNameMap={memberNameMap}
+              placeTypeTextMap={t.placeTypeLabels}
+              popupMembersLabel={t.popupTagMembers}
+              popupTypeLabel={t.popupTagType}
+            />
           </div>
 
-          {viewMode === 'route' ? (
-            <div className="paper-panel p-4">
-              <div className="mb-3">
-                <h3 className="hero-serif text-[28px] leading-none text-[#263223]">{t.routeList}</h3>
-                <p className="mt-1 text-sm text-[#5f7559]">{t.routeHint}</p>
-              </div>
-
-              <PlaceList
-                places={myPilgrimagePlaces}
-                members={members}
-                placeTypes={placeTypes}
-                selectedPlaceId={selectedPlaceId}
-                onSelectPlace={setSelectedPlaceId}
-                emptyText={t.routeEmpty}
-                favoritePlaceIds={favoritePlaceIds}
-                visitedPlaceIds={visitedPlaceIds}
-                savedBadgeText={t.savedBadge}
-                visitedBadgeText={t.visitedBadge}
-              />
-            </div>
-          ) : null}
+          <aside ref={detailPanelRef} className="detail-floating-card">
+            <PlaceDetailPanel
+              place={selectedPlace}
+              members={members}
+              placeTypes={placeTypes}
+              checkIns={checkIns}
+              userState={selectedState}
+              isFavorite={!!selectedPlaceId && favoritePlaceIds.includes(selectedPlaceId)}
+              locale={locale}
+              onToggleFavorite={onToggleFavorite}
+              onToggleVisited={onToggleVisited}
+              onSubmitCheckIn={onSubmitCheckIn}
+            />
+          </aside>
         </div>
-
-        <aside ref={detailPanelRef} className="xl:sticky xl:top-4 xl:max-h-[88vh] xl:overflow-y-auto">
-          <PlaceDetailPanel
-            place={selectedPlace}
-            members={members}
-            placeTypes={placeTypes}
-            checkIns={checkIns}
-            userState={selectedState}
-            isFavorite={!!selectedPlaceId && favoritePlaceIds.includes(selectedPlaceId)}
-            locale={locale}
-            onToggleFavorite={onToggleFavorite}
-            onToggleVisited={onToggleVisited}
-            onSubmitCheckIn={onSubmitCheckIn}
-          />
-        </aside>
       </section>
 
-      <button
-        type="button"
-        className="submit-place-fab"
-        onClick={() => setSubmitPlaceOpen(true)}
-        title={t.submitPlace}
-        aria-label={t.submitPlace}
-      >
-        <span aria-hidden>+</span>
-        {t.submitPlace}
-      </button>
+      {viewMode === 'route' ? (
+        <section className="paper-panel mt-4 p-4">
+          <div className="mb-3">
+            <h3 className="hero-serif text-[28px] leading-none text-[#263223]">{t.routeList}</h3>
+            <p className="mt-1 text-sm text-[#5f7559]">{t.routeHint}</p>
+          </div>
 
-      <SubmitPlaceForm
-        open={submitPlaceOpen}
-        members={members}
-        placeTypes={placeTypes}
-        existingPlaces={allPlaces}
-        placeTypeTextMap={t.placeTypeLabels}
-        onClose={() => setSubmitPlaceOpen(false)}
-        onSubmit={onSubmitPlace}
-        labels={{
-          submitPlaceTitle: t.submitPlaceTitle,
-          submitPlaceDesc: t.submitPlaceDesc,
-          submitPlaceName: t.submitPlaceName,
-          submitPlaceCoords: t.submitPlaceCoords,
-          submitPlaceLat: t.submitPlaceLat,
-          submitPlaceLng: t.submitPlaceLng,
-          submitPlaceMembers: t.submitPlaceMembers,
-          submitPlaceType: t.submitPlaceType,
-          submitPlaceReason: t.submitPlaceReason,
-          submitPlaceReasonHint: t.submitPlaceReasonHint,
-          submitPlaceSource: t.submitPlaceSource,
-          submitPlaceExtra: t.submitPlaceExtra,
-          submitPlaceImage: t.submitPlaceImage,
-          submitPlaceDuplicateHint: t.submitPlaceDuplicateHint,
-          submitPlaceExactHint: t.submitPlaceExactHint,
-          submitPlaceSubmit: t.submitPlaceSubmit,
-          submitPlaceSuccess: t.submitPlaceSuccess,
-          close: t.close,
-          submitting: t.submitting
-        }}
-      />
+          <PlaceList
+            places={myPilgrimagePlaces}
+            members={members}
+            placeTypes={placeTypes}
+            selectedPlaceId={selectedPlaceId}
+            onSelectPlace={setSelectedPlaceId}
+            emptyText={t.routeEmpty}
+            favoritePlaceIds={favoritePlaceIds}
+            visitedPlaceIds={visitedPlaceIds}
+            savedBadgeText={t.savedBadge}
+            visitedBadgeText={t.visitedBadge}
+          />
+        </section>
+      ) : null}
     </main>
   );
 }
-
-
