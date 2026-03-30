@@ -6,7 +6,8 @@ type Props = {
   onSubmit: (files: File[], note: string, force: boolean) => Promise<{ warned: boolean }>;
   title: string;
   hint: string;
-  needImageText: string;
+  imageOptionalText: string;
+  needContentText: string;
   submitErrorText: string;
   duplicateWarnText: string;
   submittingText: string;
@@ -17,7 +18,8 @@ export default function CheckInForm({
   onSubmit,
   title,
   hint,
-  needImageText,
+  imageOptionalText,
+  needContentText,
   submitErrorText,
   duplicateWarnText,
   submittingText,
@@ -28,12 +30,14 @@ export default function CheckInForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const hasContent = note.trim().length > 0 || files.length > 0;
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!files.length) {
-      setError(needImageText);
+    if (!hasContent) {
+      setError(needContentText);
       return;
     }
 
@@ -60,6 +64,7 @@ export default function CheckInForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-3 panel-fade">
       <p className="paper-kicker">{title}</p>
+      <p className="text-xs text-[#667d60]">{imageOptionalText}</p>
       <input
         type="file"
         accept="image/*"
@@ -77,7 +82,7 @@ export default function CheckInForm({
 
       {error ? <p className="text-xs text-[#9c3b3b]">{error}</p> : null}
 
-      <button type="submit" disabled={loading} className="paper-button-primary">
+      <button type="submit" disabled={loading || !hasContent} className="paper-button-primary">
         {loading ? submittingText : submitText}
       </button>
     </form>

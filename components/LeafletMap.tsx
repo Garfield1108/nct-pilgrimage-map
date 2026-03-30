@@ -21,7 +21,6 @@ type LeafletMapProps = {
   placeTypeTextMap: Record<string, string>;
   popupMembersLabel: string;
   popupTypeLabel: string;
-  viewSpotLabel: string;
 };
 
 function createMarkerIcon(
@@ -36,14 +35,19 @@ function createMarkerIcon(
     ? memberGlyphSvgString(activeMemberId, iconStroke)
     : placeTypeGlyphSvgString(normalizePlaceTypeId(placeTypeId), iconStroke);
 
-  const favoriteBadge = favorited ? '<span class="favorite-badge">★</span>' : '';
-  const visitedBadge = visited ? '<span class="visited-badge">✓</span>' : '';
+  const favoriteBadge = favorited ? '<span class="favorite-badge" title="saved">★</span>' : '';
+  const visitedBadge = visited ? '<span class="visited-badge" title="visited">✓</span>' : '';
+
+  const classes = ['map-marker-shell'];
+  if (active) classes.push('is-selected');
+  if (favorited) classes.push('is-saved');
+  if (visited) classes.push('is-visited');
 
   return L.divIcon({
     className: '',
-    html: `<div class="map-marker-shell ${active ? 'selected' : ''} ${favorited ? 'favorited' : ''} ${visited ? 'visited' : ''}"><span class="map-marker-glyph">${glyph}</span>${favoriteBadge}${visitedBadge}</div>`,
-    iconSize: active ? [36, 36] : [31, 31],
-    iconAnchor: active ? [18, 18] : [16, 16]
+    html: `<div class="${classes.join(' ')}"><span class="map-marker-glyph">${glyph}</span>${favoriteBadge}${visitedBadge}</div>`,
+    iconSize: active ? [38, 38] : [32, 32],
+    iconAnchor: active ? [19, 19] : [16, 16]
   });
 }
 
@@ -80,8 +84,7 @@ export default function LeafletMap({
   memberNameMap,
   placeTypeTextMap,
   popupMembersLabel,
-  popupTypeLabel,
-  viewSpotLabel
+  popupTypeLabel
 }: LeafletMapProps) {
   const selectedPlace = useMemo(
     () => places.find((place) => place.id === selectedPlaceId),
@@ -122,9 +125,9 @@ export default function LeafletMap({
           positions={routePolyline}
           pathOptions={{
             color: '#6a9c50',
-            weight: 2,
-            opacity: 0.72,
-            dashArray: '3,6',
+            weight: 2.2,
+            opacity: 0.75,
+            dashArray: '4,6',
             lineCap: 'round',
             lineJoin: 'round'
           }}
@@ -153,8 +156,6 @@ export default function LeafletMap({
                   <p>{place.englishName}</p>
                 </div>
 
-                <p className="memo-popup-desc">{place.description}</p>
-
                 <div className="memo-popup-tags">
                   <span className="memo-popup-tag">
                     {popupTypeLabel}: {placeTypeTextMap[placeTypeId] ?? placeTypeId}
@@ -165,10 +166,6 @@ export default function LeafletMap({
                     </span>
                   ) : null}
                 </div>
-
-                <button type="button" className="memo-popup-btn" onClick={() => onSelectPlace?.(place.id)}>
-                  {viewSpotLabel}
-                </button>
               </div>
             </Popup>
           </Marker>

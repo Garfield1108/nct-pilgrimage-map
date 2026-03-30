@@ -2,14 +2,16 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import CheckInForm from '@/components/CheckInForm';
 import FilterPanel from '@/components/FilterPanel';
 import PlaceDetailPanel from '@/components/PlaceDetailPanel';
 import PlaceList from '@/components/PlaceList';
+import SubmitPlaceForm from '@/components/SubmitPlaceForm';
 import { normalizePlaceTypes } from '@/components/IconSystem';
 import { getDataAdapter } from '@/lib/adapters';
 import { getStoredLocale, Locale, setStoredLocale, uiText } from '@/lib/i18n';
 import { getSessionId } from '@/lib/storage';
-import { DisplayCheckIn, Member, Place, PlaceFilters, PlaceType, UserPlaceState } from '@/lib/types';
+import { CreatePlaceSubmissionInput, DisplayCheckIn, Member, Place, PlaceFilters, PlaceType, UserPlaceState } from '@/lib/types';
 
 const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
   ssr: false
@@ -38,6 +40,7 @@ export default function HomePage() {
   const [checkIns, setCheckIns] = useState<DisplayCheckIn[]>([]);
   const [states, setStates] = useState<UserPlaceState[]>([]);
   const [favoritePlaceIds, setFavoritePlaceIds] = useState<string[]>([]);
+  const [submitPlaceOpen, setSubmitPlaceOpen] = useState(false);
   const detailPanelRef = useRef<HTMLDivElement>(null);
 
   const t = uiText[locale];
@@ -137,8 +140,15 @@ export default function HomePage() {
 
   const onToggleVisited = async () => {
     if (!sessionId || !selectedPlaceId) return;
+
+    const current = states.find((s) => s.placeId === selectedPlaceId);
     const nextStates = await adapter.toggleVisited(sessionId, selectedPlaceId);
     setStates(nextStates);
+
+    if (!current?.visited && !favoritePlaceIds.includes(selectedPlaceId)) {
+      const nextFavorites = await adapter.toggleFavoritePlaceId(selectedPlaceId);
+      setFavoritePlaceIds(nextFavorites);
+    }
   };
 
   const onSubmitCheckIn = async (files: File[], note: string, force: boolean) => {
@@ -166,41 +176,53 @@ export default function HomePage() {
       setStates(nextStates);
     }
 
+    if (!favoritePlaceIds.includes(selectedPlaceId)) {
+      const nextFavorites = await adapter.toggleFavoritePlaceId(selectedPlaceId);
+      setFavoritePlaceIds(nextFavorites);
+    }
+
     return { warned: false };
   };
 
+  const onSubmitPlace = async (input: Omit<CreatePlaceSubmissionInput, 'sessionId'>) => {
+    if (!sessionId) {
+      throw new Error('Please refresh the page and try again.');
+    }
+
+    await adapter.createPlaceSubmission({ ...input, sessionId });
+  };
+
   return (
-    <main className="archive-page mx-auto max-w-[1680px] px-4 pb-8 pt-5 md:px-8 md:pt-7">
-      <section className="archive-header collage-header mb-4">
-        <div className="archive-header-main">
+    <main className="archive-page mx-auto max-w-[1680px] px-4 pb-8 pt-4 md:px-8 md:pt-5">
+      <section className="archive-header compact-header mb-3">
+        <div className="archive-header-main compact-main-row">
           <div>
-            <p className="editorial-tag mb-2 inline-flex">NCT FAN MAP</p>
-            <h1 className="hero-serif archive-title">{t.headerTitle}</h1>
+            <h1 className="hero-serif archive-title compact-title">{t.headerTitle}</h1>
             <p className="archive-subtitle">{t.subtitle}</p>
-            <p className="archive-note">{t.headerNote}</p>
           </div>
 
           <div className="archive-actions">
-            <div className="language-switcher-wrap">
-              <p className="language-top-label">{t.language}</p>
-              <div className="language-switcher" role="group" aria-label={t.language}>
-                <button type="button" onClick={() => switchLocale('zh')} className={`language-option ${locale === 'zh' ? 'active' : ''}`}>
-                  {t.localeZh}
-                </button>
-                <button type="button" onClick={() => switchLocale('en')} className={`language-option ${locale === 'en' ? 'active' : ''}`}>
-                  {t.localeEn}
-                </button>
-              </div>
+            <div className="language-switcher" role="group" aria-label="language switcher">
+              <button type="button" onClick={() => switchLocale('zh')} className={`language-option ${locale === 'zh' ? 'active' : ''}`}>
+                {t.localeZh}
+              </button>
+              <button type="button" onClick={() => switchLocale('en')} className={`language-option ${locale === 'en' ? 'active' : ''}`}>
+                {t.localeEn}
+              </button>
             </div>
 
-            <button type="button" onClick={() => setViewMode(viewMode === 'all' ? 'route' : 'all')} className="paper-button-secondary">
+            <button
+              type="button"
+              onClick={() => setViewMode(viewMode === 'all' ? 'route' : 'all')}
+              className="paper-button-secondary"
+            >
               {viewMode === 'all' ? t.route : t.mapView}
             </button>
           </div>
         </div>
       </section>
 
-      <section className="paper-panel mb-4 p-4">
+      <section className="paper-panel compact-filter-panel mb-3 p-3 md:p-4">
         <FilterPanel
           members={members}
           placeTypes={placeTypes}
@@ -213,15 +235,16 @@ export default function HomePage() {
         />
       </section>
 
-      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_430px]">
-        <div className="space-y-4">
-          <div className="paper-panel map-board lifted-layer p-3">
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="space-y-3">
+          <div className="paper-panel map-board p-3">
             <div className="mb-2 flex items-center justify-between px-1">
-              <h3 className="hero-serif text-[28px] leading-none text-[#263223]">{viewMode === 'all' ? t.mapBoardTitle : t.myPilgrimageTitle}</h3>
-              <span className="memo-badge">{viewMode === 'all' ? t.mapBoardNote : t.myPilgrimageNote}</span>
+              <h3 className="hero-serif text-[27px] leading-none text-[#263223]">
+                {viewMode === 'all' ? t.mapBoardTitle : t.myPilgrimageTitle}
+              </h3>
             </div>
 
-            <div className="h-[66vh] min-h-[500px] overflow-hidden rounded-[22px] border border-[#d2dfc6] bg-[#f8fbf4]">
+            <div className="h-[64vh] min-h-[480px] overflow-hidden rounded-[22px] border border-[#d2dfc6] bg-[#f8fbf4]">
               <LeafletMap
                 places={visiblePlaces}
                 selectedPlaceId={selectedPlaceId}
@@ -235,13 +258,12 @@ export default function HomePage() {
                 placeTypeTextMap={t.placeTypeLabels}
                 popupMembersLabel={t.popupTagMembers}
                 popupTypeLabel={t.popupTagType}
-                viewSpotLabel={t.viewSpot}
               />
             </div>
           </div>
 
           {viewMode === 'route' ? (
-            <div className="paper-panel scrapbook-layer p-4">
+            <div className="paper-panel p-4">
               <div className="mb-3">
                 <h3 className="hero-serif text-[28px] leading-none text-[#263223]">{t.routeList}</h3>
                 <p className="mt-1 text-sm text-[#5f7559]">{t.routeHint}</p>
@@ -278,6 +300,50 @@ export default function HomePage() {
           />
         </aside>
       </section>
+
+      <button
+        type="button"
+        className="submit-place-fab"
+        onClick={() => setSubmitPlaceOpen(true)}
+        title={t.submitPlace}
+        aria-label={t.submitPlace}
+      >
+        <span aria-hidden>+</span>
+        {t.submitPlace}
+      </button>
+
+      <SubmitPlaceForm
+        open={submitPlaceOpen}
+        members={members}
+        placeTypes={placeTypes}
+        existingPlaces={allPlaces}
+        placeTypeTextMap={t.placeTypeLabels}
+        onClose={() => setSubmitPlaceOpen(false)}
+        onSubmit={onSubmitPlace}
+        labels={{
+          submitPlaceTitle: t.submitPlaceTitle,
+          submitPlaceDesc: t.submitPlaceDesc,
+          submitPlaceName: t.submitPlaceName,
+          submitPlaceCoords: t.submitPlaceCoords,
+          submitPlaceLat: t.submitPlaceLat,
+          submitPlaceLng: t.submitPlaceLng,
+          submitPlaceMembers: t.submitPlaceMembers,
+          submitPlaceType: t.submitPlaceType,
+          submitPlaceReason: t.submitPlaceReason,
+          submitPlaceReasonHint: t.submitPlaceReasonHint,
+          submitPlaceSource: t.submitPlaceSource,
+          submitPlaceExtra: t.submitPlaceExtra,
+          submitPlaceImage: t.submitPlaceImage,
+          submitPlaceDuplicateHint: t.submitPlaceDuplicateHint,
+          submitPlaceExactHint: t.submitPlaceExactHint,
+          submitPlaceSubmit: t.submitPlaceSubmit,
+          submitPlaceSuccess: t.submitPlaceSuccess,
+          close: t.close,
+          submitting: t.submitting
+        }}
+      />
     </main>
   );
 }
+
+

@@ -2,6 +2,7 @@
 import { filterPlaces } from '../filters';
 import {
   createCheckIn,
+  createPlaceSubmission,
   getFavoritePlaceIds,
   getUserPlaceStates,
   listCheckIns,
@@ -12,10 +13,12 @@ import {
 } from '../storage';
 import {
   CreateCheckInInput,
+  CreatePlaceSubmissionInput,
   DisplayCheckIn,
   Member,
   Place,
   PlaceFilters,
+  PlaceSubmission,
   PlaceType,
   UserPlaceState
 } from '../types';
@@ -32,6 +35,7 @@ export type DataAdapter = {
   toggleVisited: (sessionId: string, placeId: string) => Promise<UserPlaceState[]>;
   getFavoritePlaceIds: () => Promise<string[]>;
   toggleFavoritePlaceId: (placeId: string) => Promise<string[]>;
+  createPlaceSubmission: (input: CreatePlaceSubmissionInput) => Promise<PlaceSubmission>;
 };
 
 export const mockAdapter: DataAdapter = {
@@ -82,5 +86,9 @@ export const mockAdapter: DataAdapter = {
 
   async toggleFavoritePlaceId(placeId: string) {
     return toggleFavoritePlaceId(placeId);
+  },
+
+  async createPlaceSubmission(input: CreatePlaceSubmissionInput) {
+    return createPlaceSubmission(input);
   }
 };
