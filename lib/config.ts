@@ -10,5 +10,11 @@ export const MAP_STYLE = 'mapbox://styles/mapbox/streets-v12';
 
 export const CHECKIN_DUPLICATE_MINUTES = 10;
 
+const configuredProvider = process.env.NEXT_PUBLIC_DATA_PROVIDER;
+
 export const DATA_PROVIDER =
-  process.env.NEXT_PUBLIC_DATA_PROVIDER === 'supabase' ? 'supabase' : 'mock';
+  configuredProvider === 'google-sheets'
+    ? 'google-sheets'
+    : configuredProvider === 'supabase'
+      ? 'supabase'
+      : 'mock';

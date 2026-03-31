@@ -34,23 +34,7 @@ export type DataAdapter = {
   toggleFavoritePlaceId: (placeId: string) => Promise<string[]>;
 };
 
-export const mockAdapter: DataAdapter = {
-  async getMembers() {
-    return members;
-  },
-
-  async getPlaceTypes() {
-    return placeTypes;
-  },
-
-  async getPlaces(filters: PlaceFilters) {
-    return filterPlaces(places, members, filters);
-  },
-
-  async getPlaceById(placeId: string) {
-    return places.find((p) => p.id === placeId);
-  },
-
+const localInteractionAdapter = {
   async getCheckIns(placeId: string, sessionId?: string) {
     const items = await listCheckIns(placeId, sessionId);
     return toDisplayCheckIns(items);
@@ -83,4 +67,60 @@ export const mockAdapter: DataAdapter = {
   async toggleFavoritePlaceId(placeId: string) {
     return toggleFavoritePlaceId(placeId);
   }
+};
+
+async function fetchGoogleSheetPlaces(): Promise<Place[]> {
+  const response = await fetch('/api/places', {
+    method: 'GET',
+    cache: 'no-store'
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to load places from Google Sheets API.');
+  }
+
+  const payload = (await response.json()) as { places?: Place[] };
+  return Array.isArray(payload.places) ? payload.places : [];
+}
+
+export const mockAdapter: DataAdapter = {
+  async getMembers() {
+    return members;
+  },
+
+  async getPlaceTypes() {
+    return placeTypes;
+  },
+
+  async getPlaces(filters: PlaceFilters) {
+    return filterPlaces(places, members, filters);
+  },
+
+  async getPlaceById(placeId: string) {
+    return places.find((p) => p.id === placeId);
+  },
+
+  ...localInteractionAdapter
+};
+
+export const googleSheetsAdapter: DataAdapter = {
+  async getMembers() {
+    return members;
+  },
+
+  async getPlaceTypes() {
+    return placeTypes;
+  },
+
+  async getPlaces(filters: PlaceFilters) {
+    const sheetPlaces = await fetchGoogleSheetPlaces();
+    return filterPlaces(sheetPlaces, members, filters);
+  },
+
+  async getPlaceById(placeId: string) {
+    const sheetPlaces = await fetchGoogleSheetPlaces();
+    return sheetPlaces.find((p) => p.id === placeId);
+  },
+
+  ...localInteractionAdapter
 };
