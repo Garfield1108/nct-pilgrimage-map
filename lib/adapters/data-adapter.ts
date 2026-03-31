@@ -1,55 +1,25 @@
 ﻿import { members, places, placeTypes } from '../mock-data';
 import { filterPlaces } from '../filters';
 import {
-  createCheckIn,
   getFavoritePlaceIds,
   getUserPlaceStates,
-  listCheckIns,
-  shouldWarnDuplicate,
-  toDisplayCheckIns,
   toggleFavoritePlaceId,
   upsertUserPlaceState
 } from '../storage';
-import {
-  CreateCheckInInput,
-  DisplayCheckIn,
-  Member,
-  Place,
-  PlaceFilters,
-  PlaceType,
-  UserPlaceState
-} from '../types';
+import { Member, Place, PlaceFilters, PlaceType, UserPlaceState } from '../types';
 
 export type DataAdapter = {
   getMembers: () => Promise<Member[]>;
   getPlaceTypes: () => Promise<PlaceType[]>;
   getPlaces: (filters: PlaceFilters) => Promise<Place[]>;
   getPlaceById: (placeId: string) => Promise<Place | undefined>;
-  getCheckIns: (placeId: string, sessionId?: string) => Promise<DisplayCheckIn[]>;
-  createCheckIn: (input: CreateCheckInInput) => Promise<DisplayCheckIn>;
-  shouldWarnDuplicate: (sessionId: string, placeId: string) => Promise<boolean>;
   getUserPlaceStates: (sessionId: string) => Promise<UserPlaceState[]>;
   toggleVisited: (sessionId: string, placeId: string) => Promise<UserPlaceState[]>;
   getFavoritePlaceIds: () => Promise<string[]>;
   toggleFavoritePlaceId: (placeId: string) => Promise<string[]>;
 };
 
-const localInteractionAdapter = {
-  async getCheckIns(placeId: string, sessionId?: string) {
-    const items = await listCheckIns(placeId, sessionId);
-    return toDisplayCheckIns(items);
-  },
-
-  async createCheckIn(input: CreateCheckInInput) {
-    const created = await createCheckIn(input);
-    const [display] = await toDisplayCheckIns([created]);
-    return display;
-  },
-
-  async shouldWarnDuplicate(sessionId: string, placeId: string) {
-    return shouldWarnDuplicate(sessionId, placeId);
-  },
-
+const localStateAdapter = {
   async getUserPlaceStates(sessionId: string) {
     return getUserPlaceStates(sessionId);
   },
@@ -100,7 +70,7 @@ export const mockAdapter: DataAdapter = {
     return places.find((p) => p.id === placeId);
   },
 
-  ...localInteractionAdapter
+  ...localStateAdapter
 };
 
 export const googleSheetsAdapter: DataAdapter = {
@@ -122,5 +92,5 @@ export const googleSheetsAdapter: DataAdapter = {
     return sheetPlaces.find((p) => p.id === placeId);
   },
 
-  ...localInteractionAdapter
+  ...localStateAdapter
 };

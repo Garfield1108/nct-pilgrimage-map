@@ -8,8 +8,6 @@ export const MAP_DEFAULT_CENTER = {
 export const MAP_DEFAULT_ZOOM = 11;
 export const MAP_STYLE = 'mapbox://styles/mapbox/streets-v12';
 
-export const CHECKIN_DUPLICATE_MINUTES = 10;
-
 const configuredProvider = process.env.NEXT_PUBLIC_DATA_PROVIDER;
 
 export const DATA_PROVIDER =

@@ -18,20 +18,18 @@ export default function WantVisitedButtons({
   visitedLabel
 }: Props) {
   return (
-    <div className="flex flex-wrap gap-2">
-      <button
-        type="button"
-        onClick={onToggleFavorite}
-        className={`paper-action-btn save-btn ${isFavorite ? 'active' : 'inactive'}`}
-      >
+    <div className="action-row">
+      <button type="button" onClick={onToggleFavorite} className={`paper-action-btn save-btn ${isFavorite ? 'active' : 'inactive'}`}>
+        <span className="btn-dot" aria-hidden>
+          ★
+        </span>
         {wantLabel}
       </button>
 
-      <button
-        type="button"
-        onClick={onToggleVisited}
-        className={`paper-action-btn visited-btn ${visited ? 'active' : 'inactive'}`}
-      >
+      <button type="button" onClick={onToggleVisited} className={`paper-action-btn visited-btn ${visited ? 'active' : 'inactive'}`}>
+        <span className="btn-dot" aria-hidden>
+          ✓
+        </span>
         {visitedLabel}
       </button>
     </div>

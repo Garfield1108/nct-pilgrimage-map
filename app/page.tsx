@@ -9,7 +9,7 @@ import { normalizePlaceTypes } from '@/components/IconSystem';
 import { getDataAdapter } from '@/lib/adapters';
 import { getStoredLocale, Locale, setStoredLocale, uiText } from '@/lib/i18n';
 import { getSessionId } from '@/lib/storage';
-import { DisplayCheckIn, Member, Place, PlaceFilters, PlaceType, UserPlaceState } from '@/lib/types';
+import { Member, Place, PlaceFilters, PlaceType, UserPlaceState } from '@/lib/types';
 
 const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
   ssr: false
@@ -35,7 +35,6 @@ export default function HomePage() {
   const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string>();
   const [sessionId, setSessionId] = useState<string>('');
-  const [checkIns, setCheckIns] = useState<DisplayCheckIn[]>([]);
   const [states, setStates] = useState<UserPlaceState[]>([]);
   const [favoritePlaceIds, setFavoritePlaceIds] = useState<string[]>([]);
   const detailPanelRef = useRef<HTMLDivElement>(null);
@@ -104,18 +103,6 @@ export default function HomePage() {
     }
   }, [selectedPlaceId]);
 
-  useEffect(() => {
-    const loadCheckins = async () => {
-      if (!selectedPlaceId || !sessionId) {
-        setCheckIns([]);
-        return;
-      }
-      setCheckIns(await adapter.getCheckIns(selectedPlaceId, sessionId));
-    };
-
-    void loadCheckins();
-  }, [selectedPlaceId, sessionId]);
-
   const selectedPlace = useMemo(() => visiblePlaces.find((p) => p.id === selectedPlaceId), [visiblePlaces, selectedPlaceId]);
 
   const selectedState = useMemo(() => states.find((s) => s.placeId === selectedPlaceId), [states, selectedPlaceId]);
@@ -148,44 +135,12 @@ export default function HomePage() {
     }
   };
 
-  const onSubmitCheckIn = async (files: File[], note: string, force: boolean) => {
-    if (!sessionId || !selectedPlaceId) {
-      throw new Error('Please refresh the page and try again.');
-    }
-
-    if (!force) {
-      const warned = await adapter.shouldWarnDuplicate(sessionId, selectedPlaceId);
-      if (warned) return { warned: true };
-    }
-
-    const created = await adapter.createCheckIn({
-      files,
-      note,
-      placeId: selectedPlaceId,
-      sessionId
-    });
-
-    setCheckIns((prev) => [created, ...prev]);
-
-    const current = states.find((s) => s.placeId === selectedPlaceId);
-    if (!current?.visited) {
-      const nextStates = await adapter.toggleVisited(sessionId, selectedPlaceId);
-      setStates(nextStates);
-    }
-
-    if (!favoritePlaceIds.includes(selectedPlaceId)) {
-      const nextFavorites = await adapter.toggleFavoritePlaceId(selectedPlaceId);
-      setFavoritePlaceIds(nextFavorites);
-    }
-
-    return { warned: false };
-  };
-
   return (
-    <main className="archive-page mx-auto max-w-[1680px] px-4 pb-8 pt-4 md:px-8 md:pt-5">
-      <section className="archive-header compact-header mb-3">
+    <main className="archive-page mx-auto max-w-[1720px] px-4 pb-8 pt-4 md:px-8 md:pt-6">
+      <section className="archive-header premium-header mb-3">
         <div className="archive-header-main compact-main-row">
           <div>
+            <p className="brand-eyebrow">NCT FAN ARCHIVE · SEOUL</p>
             <h1 className="hero-serif archive-title compact-title">{t.headerTitle}</h1>
             <p className="archive-subtitle">{t.subtitle}</p>
           </div>
@@ -203,7 +158,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setViewMode(viewMode === 'all' ? 'route' : 'all')}
-              className="paper-button-secondary"
+              className="paper-button-secondary view-toggle"
             >
               {viewMode === 'all' ? t.route : t.mapView}
             </button>
@@ -211,7 +166,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="paper-panel compact-filter-panel mb-3 p-3 md:p-4">
+      <section className="paper-panel filter-ribbon mb-3 p-3 md:p-4">
         <FilterPanel
           members={members}
           placeTypes={placeTypes}
@@ -224,9 +179,9 @@ export default function HomePage() {
         />
       </section>
 
-      <section className="map-led-stage paper-panel p-3">
+      <section className="map-led-stage stage-shell paper-panel p-3">
         <div className="map-canvas-wrap">
-          <div className="h-[70vh] min-h-[520px] overflow-hidden rounded-[22px] border border-[#d2dfc6] bg-[#f8fbf4]">
+          <div className="map-stage-frame h-[72vh] min-h-[560px] overflow-hidden rounded-[24px]">
             <LeafletMap
               places={visiblePlaces}
               selectedPlaceId={selectedPlaceId}
@@ -248,23 +203,21 @@ export default function HomePage() {
               place={selectedPlace}
               members={members}
               placeTypes={placeTypes}
-              checkIns={checkIns}
               userState={selectedState}
               isFavorite={!!selectedPlaceId && favoritePlaceIds.includes(selectedPlaceId)}
               locale={locale}
               onToggleFavorite={onToggleFavorite}
               onToggleVisited={onToggleVisited}
-              onSubmitCheckIn={onSubmitCheckIn}
             />
           </aside>
         </div>
       </section>
 
       {viewMode === 'route' ? (
-        <section className="paper-panel mt-4 p-4">
+        <section className="paper-panel route-surface mt-4 p-4">
           <div className="mb-3">
-            <h3 className="hero-serif text-[28px] leading-none text-[#263223]">{t.routeList}</h3>
-            <p className="mt-1 text-sm text-[#5f7559]">{t.routeHint}</p>
+            <h3 className="hero-serif text-[30px] leading-none text-[#1f2a1f]">{t.routeList}</h3>
+            <p className="mt-1 text-sm text-[#55684f]">{t.routeHint}</p>
           </div>
 
           <PlaceList

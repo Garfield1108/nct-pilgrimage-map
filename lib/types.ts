@@ -37,36 +37,10 @@ export type PlaceFilters = {
   keyword: string;
 };
 
-export type CheckIn = {
-  id: string;
-  placeId: string;
-  sessionId: string;
-  note?: string;
-  imageRefs: string[];
-  createdAt: string;
-};
-
-export type CheckInImage = {
-  id: string;
-  mimeType: string;
-  blob: Blob;
-};
-
 export type UserPlaceState = {
   placeId: string;
   sessionId: string;
   wantToGo: boolean;
   visited: boolean;
   updatedAt: string;
-};
-
-export type DisplayCheckIn = CheckIn & {
-  imageUrls: string[];
-};
-
-export type CreateCheckInInput = {
-  placeId: string;
-  sessionId: string;
-  note?: string;
-  files: File[];
 };
