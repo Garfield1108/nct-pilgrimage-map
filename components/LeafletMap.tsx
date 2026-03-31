@@ -46,8 +46,8 @@ function createMarkerIcon(
   return L.divIcon({
     className: '',
     html: `<div class="${classes.join(' ')}"><span class="map-marker-glyph">${glyph}</span>${favoriteBadge}${visitedBadge}</div>`,
-    iconSize: active ? [38, 38] : [32, 32],
-    iconAnchor: active ? [19, 19] : [16, 16]
+    iconSize: active ? [40, 40] : [34, 34],
+    iconAnchor: active ? [20, 20] : [17, 17]
   });
 }
 
@@ -115,7 +115,7 @@ export default function LeafletMap({
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; CARTO'
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        opacity={0.9}
+        opacity={0.88}
       />
 
       <MapFocusController selectedPlace={selectedPlace} />
@@ -124,10 +124,10 @@ export default function LeafletMap({
         <Polyline
           positions={routePolyline}
           pathOptions={{
-            color: '#6a9c50',
-            weight: 2.2,
-            opacity: 0.75,
-            dashArray: '4,6',
+            color: '#557148',
+            weight: 2.4,
+            opacity: 0.78,
+            dashArray: '4,7',
             lineCap: 'round',
             lineJoin: 'round'
           }}
@@ -151,6 +151,7 @@ export default function LeafletMap({
           >
             <Popup className="custom-popup memo-popup" autoPan>
               <div className="memo-popup-card">
+                <p className="popup-overline">NCT SPOT</p>
                 <div className="memo-popup-title">
                   <span dangerouslySetInnerHTML={{ __html: miniGlyphHtml(activeMemberId, placeTypeId) }} />
                   <p>{place.englishName}</p>

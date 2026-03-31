@@ -37,8 +37,8 @@ export default function FilterPanel({
 
   return (
     <div className="paper-filter-stack collage-filter">
-      <div className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#6a7f64]">
+      <div className="filter-search-wrap relative">
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#5c7157]">
           <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
             <circle cx="9" cy="9" r="5" />
             <path d="M13 13l4 4" />
@@ -47,45 +47,51 @@ export default function FilterPanel({
         <input value={filters.keyword} onChange={onSearchChange} placeholder={searchPlaceholder} className="paper-search-input" />
       </div>
 
-      <div className="scrap-section members-row">
-        <p className="paper-kicker lined-label">{membersLabel}</p>
-        <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
-          {members.map((member, idx) => {
-            const active = filters.memberIds.includes(member.id);
-            return (
-              <button
-                key={member.id}
-                type="button"
-                onClick={() => toggleItem('memberIds', member.id)}
-                className={`sticker-filter tab-${idx % 4} ${active ? 'active' : ''}`}
-              >
-                <MemberGlyph memberId={member.id} className="h-4 w-4" />
-                {member.displayName}
-              </button>
-            );
-          })}
+      <div className="filter-grid">
+        <div className="scrap-section filter-group-card">
+          <div className="filter-group-head">
+            <p className="paper-kicker lined-label">{membersLabel}</p>
+          </div>
+          <div className="chip-track">
+            {members.map((member, idx) => {
+              const active = filters.memberIds.includes(member.id);
+              return (
+                <button
+                  key={member.id}
+                  type="button"
+                  onClick={() => toggleItem('memberIds', member.id)}
+                  className={`sticker-filter tab-${idx % 4} ${active ? 'active' : ''}`}
+                >
+                  <MemberGlyph memberId={member.id} className="h-4 w-4" />
+                  {member.displayName}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      <div className="scrap-section type-row">
-        <p className="paper-kicker lined-label subtle-label">{placeTypeLabel}</p>
-        <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
-          {placeTypes.map((type, idx) => {
-            const normalizedId = normalizePlaceTypeId(type.id);
-            const active = filters.placeTypeIds.includes(type.id);
-            const label = placeTypeTextMap[normalizedId] ?? type.label;
-            return (
-              <button
-                key={type.id}
-                type="button"
-                onClick={() => toggleItem('placeTypeIds', type.id)}
-                className={`sticker-filter type-chip tab-${idx % 4} ${active ? 'active' : ''}`}
-              >
-                <PlaceTypeGlyph placeTypeId={normalizedId} className="h-4 w-4" />
-                {label}
-              </button>
-            );
-          })}
+        <div className="scrap-section filter-group-card type-panel">
+          <div className="filter-group-head">
+            <p className="paper-kicker lined-label subtle-label">{placeTypeLabel}</p>
+          </div>
+          <div className="chip-track">
+            {placeTypes.map((type, idx) => {
+              const normalizedId = normalizePlaceTypeId(type.id);
+              const active = filters.placeTypeIds.includes(type.id);
+              const label = placeTypeTextMap[normalizedId] ?? type.label;
+              return (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => toggleItem('placeTypeIds', type.id)}
+                  className={`sticker-filter type-chip tab-${idx % 4} ${active ? 'active' : ''}`}
+                >
+                  <PlaceTypeGlyph placeTypeId={normalizedId} className="h-4 w-4" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
