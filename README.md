@@ -8,7 +8,7 @@ A Next.js + Leaflet pilgrimage map for Jungwoo spots in Seoul.
   - favorites: `jw-favorites`
   - visited: `jw-visited`
 - Place images are served from `public/jw-images`.
-- A build-time script generates `data/jw-image-manifest.json` so Vercel can resolve local images without relying on runtime filesystem scans.
+- A build-time script generates `data/jw-image-manifest.json` so Cloudflare Workers can resolve local images without relying on runtime filesystem scans.
 
 ## Stack
 - Next.js App Router
@@ -17,9 +17,10 @@ A Next.js + Leaflet pilgrimage map for Jungwoo spots in Seoul.
 - Leaflet + OpenStreetMap
 - localStorage for favorites / visited
 - Google Sheets published CSV for live place data
+- Cloudflare Workers via OpenNext (`@cloudflare/next-on-pages`)
 
 ## Required environment variables
-Use these in local `.env.local` and in Vercel Project Settings -> Environment Variables:
+Use these in local `.env.local` and in Cloudflare Pages -> Settings -> Environment Variables:
 
 ```bash
 NEXT_PUBLIC_DATA_PROVIDER=google-sheets
@@ -63,18 +64,18 @@ npm install
 npm run dev
 ```
 
-## Production build
+## Production build (Cloudflare)
 ```bash
-npm run build
-npm run start
+npm run pages:build
 ```
 
-## Vercel deployment notes
+## Cloudflare Pages deployment
 - Framework Preset: `Next.js`
-- Build Command: `npm run build`
+- Build Command: `npm run pages:build`
 - Install Command: `npm install`
 - Output Directory: leave empty
-- If this project is the repo root, leave Root Directory empty.
-- If this folder is inside a larger monorepo, set Root Directory to `nct-pilgrimage-map`.
-- Sheet edits update the site without rebuild/redeploy because `/api/places` fetches the published CSV at runtime.
+- Root Directory: leave empty (unless this is inside a larger monorepo, then set to `nct-pilgrimage-map`)
+
+### Notes
+- Google Sheet edits update the site without rebuild/redeploy because `/api/places` fetches the published CSV at runtime.
 - Adding or changing files in `public/jw-images` requires a new deploy, because static assets are bundled at build time.
