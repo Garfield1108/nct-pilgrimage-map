@@ -3,7 +3,7 @@ import imageManifest from '@/data/jw-image-manifest.json';
 import { places as mockPlaces } from '@/lib/mock-data';
 import { Place } from '@/lib/types';
 import { buildGoogleSheetsCsvUrl, parsePlacesFromGoogleSheetCsv } from '@/lib/google-sheets';
-
+export const runtime = 'edge';
 const typedImageManifest = imageManifest as Record<string, string[]>;
 
 function buildIdPrefixes(placeId: string): string[] {
