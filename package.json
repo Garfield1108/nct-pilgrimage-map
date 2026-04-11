@@ -7,9 +7,10 @@
                     "dev":  "next dev",
                     "prebuild":  "node scripts/generate-image-manifest.mjs",
                     "build":  "next build",
+                    "prepages:build":  "node scripts/generate-image-manifest.mjs",
+                    "pages:build":  "npx @cloudflare/next-on-pages@1",
                     "start":  "next start",
-                    "lint":  "next lint",
-                    "pages:build":  "next build \u0026\u0026 npx @cloudflare/next-on-pages@1"
+                    "lint":  "next lint"
                 },
     "dependencies":  {
                          "leaflet":  "^1.9.4",
