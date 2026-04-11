@@ -16,6 +16,7 @@ const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
 });
 
 const adapter = getDataAdapter();
+const SOLO_MEMBER_ID = 'jungwoo';
 
 type ViewMode = 'all' | 'route';
 
@@ -24,6 +25,15 @@ const defaultFilters: PlaceFilters = {
   placeTypeIds: [],
   keyword: ''
 };
+
+function toSoloPlaces(places: Place[]): Place[] {
+  return places
+    .filter((place) => place.memberIds.includes(SOLO_MEMBER_ID))
+    .map((place) => ({
+      ...place,
+      memberIds: [SOLO_MEMBER_ID]
+    }));
+}
 
 export default function HomePage() {
   const [locale, setLocale] = useState<Locale>('zh');
@@ -57,9 +67,10 @@ export default function HomePage() {
         adapter.getFavoritePlaceIds(),
         adapter.getUserPlaceStates(sid)
       ]);
-      setMembers(m);
+      const soloPlaces = toSoloPlaces(all).filter((place) => Number.isFinite(place.latitude) && Number.isFinite(place.longitude));
+      setMembers(m.filter((member) => member.id === SOLO_MEMBER_ID));
       setPlaceTypes(normalizePlaceTypes(p));
-      setAllPlaces(all);
+      setAllPlaces(soloPlaces);
       setFavoritePlaceIds(favorites);
       setStates(userStates);
     };
@@ -70,7 +81,7 @@ export default function HomePage() {
   useEffect(() => {
     const loadPlaces = async () => {
       const result = await adapter.getPlaces(filters);
-      setFilteredPlaces(result);
+      setFilteredPlaces(toSoloPlaces(result).filter((place) => Number.isFinite(place.latitude) && Number.isFinite(place.longitude)));
     };
 
     void loadPlaces();
@@ -104,12 +115,8 @@ export default function HomePage() {
   }, [selectedPlaceId]);
 
   const selectedPlace = useMemo(() => visiblePlaces.find((p) => p.id === selectedPlaceId), [visiblePlaces, selectedPlaceId]);
-
   const selectedState = useMemo(() => states.find((s) => s.placeId === selectedPlaceId), [states, selectedPlaceId]);
-
   const memberNameMap = useMemo(() => Object.fromEntries(members.map((m) => [m.id, m.displayName])), [members]);
-
-  const activeMemberForMap = viewMode === 'all' ? filters.memberIds[0] ?? null : null;
 
   const switchLocale = (next: Locale) => {
     setLocale(next);
@@ -125,83 +132,111 @@ export default function HomePage() {
   const onToggleVisited = async () => {
     if (!sessionId || !selectedPlaceId) return;
 
-    const current = states.find((s) => s.placeId === selectedPlaceId);
     const nextStates = await adapter.toggleVisited(sessionId, selectedPlaceId);
     setStates(nextStates);
+  };
 
-    if (!current?.visited && !favoritePlaceIds.includes(selectedPlaceId)) {
-      const nextFavorites = await adapter.toggleFavoritePlaceId(selectedPlaceId);
-      setFavoritePlaceIds(nextFavorites);
-    }
+  const onToggleFavoriteById = async (placeId: string) => {
+    const next = await adapter.toggleFavoritePlaceId(placeId);
+    setFavoritePlaceIds(next);
+  };
+
+  const onToggleVisitedById = async (placeId: string) => {
+    if (!sessionId) return;
+    const nextStates = await adapter.toggleVisited(sessionId, placeId);
+    setStates(nextStates);
   };
 
   return (
-    <main className="archive-page mx-auto max-w-[1720px] px-4 pb-8 pt-4 md:px-8 md:pt-6">
-      <section className="archive-header premium-header mb-3">
-        <div className="archive-header-main compact-main-row">
-          <div>
-            <p className="brand-eyebrow">NCT FAN ARCHIVE · SEOUL</p>
-            <h1 className="hero-serif archive-title compact-title">{t.headerTitle}</h1>
-            <p className="archive-subtitle">{t.subtitle}</p>
-          </div>
+    <main className="archive-page sugar-archive-page collection-page mx-auto max-w-[1720px] px-4 pb-6 pt-3 md:px-8 md:pt-4">
+      <section className="snoopy-hero mb-3">
+                <nav className="snoopy-nav" aria-label="hero nav">
+          <button type="button" className={`snoopy-nav-tab ${locale === 'zh' ? 'active' : ''}`} onClick={() => switchLocale('zh')}>
+            中文 CN
+          </button>
+          <button type="button" className={`snoopy-nav-tab ${locale === 'en' ? 'active' : ''}`} onClick={() => switchLocale('en')}>
+            English EN
+          </button>
+          <button type="button" className={`snoopy-nav-tab ${viewMode === 'all' ? 'active' : ''}`} onClick={() => setViewMode('all')}>
+            地图
+          </button>
+          <button type="button" className={`snoopy-nav-tab ${viewMode === 'route' ? 'active' : ''}`} onClick={() => setViewMode('route')}>
+            {t.route}
+          </button>
+        </nav>
 
-          <div className="archive-actions">
-            <div className="language-switcher" role="group" aria-label="language switcher">
-              <button type="button" onClick={() => switchLocale('zh')} className={`language-option ${locale === 'zh' ? 'active' : ''}`}>
-                {t.localeZh}
-              </button>
-              <button type="button" onClick={() => switchLocale('en')} className={`language-option ${locale === 'en' ? 'active' : ''}`}>
-                {t.localeEn}
-              </button>
-            </div>
+        <span className="snoopy-washi-tape" aria-hidden />
 
-            <button
-              type="button"
-              onClick={() => setViewMode(viewMode === 'all' ? 'route' : 'all')}
-              className="paper-button-secondary view-toggle"
-            >
-              {viewMode === 'all' ? t.route : t.mapView}
-            </button>
-          </div>
+        <span className="snoopy-paw-deco paw-top-left" aria-hidden>
+          <svg viewBox="0 0 24 24" className="h-full w-full" fill="currentColor">
+            <circle cx="12" cy="14.3" r="4.8" />
+            <circle cx="7" cy="8.6" r="2.6" />
+            <circle cx="12" cy="5.9" r="2.7" />
+            <circle cx="17" cy="8.6" r="2.6" />
+          </svg>
+        </span>
+
+        <span className="snoopy-paw-deco paw-bottom-right" aria-hidden>
+          <svg viewBox="0 0 24 24" className="h-full w-full" fill="currentColor">
+            <circle cx="12" cy="14.3" r="4.8" />
+            <circle cx="7" cy="8.6" r="2.6" />
+            <circle cx="12" cy="5.9" r="2.7" />
+            <circle cx="17" cy="8.6" r="2.6" />
+          </svg>
+        </span>
+
+        <span className="snoopy-floating-candy" aria-hidden>
+          <svg viewBox="0 0 60 40" className="h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="15" y="10" width="30" height="20" rx="5" fill="#F7D6D0" stroke="#5C4B43" strokeWidth="1.5" />
+            <path d="M5 10 L15 20 L5 30 Z" stroke="#5C4B43" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M55 10 L45 20 L55 30 Z" stroke="#5C4B43" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+
+        <div className="snoopy-hero-content">
+          <h1 className="snoopy-hero-title">Sugar Rush Spots</h1>
+          <p className="snoopy-hero-sub">{t.subtitle}</p>
         </div>
       </section>
 
-      <section className="paper-panel filter-ribbon mb-3 p-3 md:p-4">
+      <section className="filter-ribbon keepsake-filter-ribbon mb-3 p-2.5 md:p-3.5">
         <FilterPanel
-          members={members}
           placeTypes={placeTypes}
           filters={filters}
           onFiltersChange={setFilters}
           searchPlaceholder={t.searchPlaceholder}
-          membersLabel={t.members}
+          searchActionLabel={t.searchAction}
           placeTypeLabel={t.placeType}
+          allPlaceTypesLabel={t.allPlaceTypes}
           placeTypeTextMap={t.placeTypeLabels}
         />
       </section>
 
-      <section className="map-led-stage stage-shell paper-panel p-3">
-        <div className="map-canvas-wrap">
-          <div className="map-stage-frame h-[72vh] min-h-[560px] overflow-hidden rounded-[24px]">
+      <section className="map-led-stage stage-shell sugar-stage collection-stage p-2.5">
+        <div className="map-canvas-wrap collection-stage-wrap">
+          <div className="map-stage-frame collection-map-stage h-[74vh] min-h-[600px] overflow-hidden rounded-[24px]">
             <LeafletMap
               places={visiblePlaces}
               selectedPlaceId={selectedPlaceId}
               onSelectPlace={setSelectedPlaceId}
-              activeMemberId={activeMemberForMap}
+              activeMemberId={null}
               favoritePlaceIds={favoritePlaceIds}
               visitedPlaceIds={visitedPlaceIds}
               routePlaceIds={myPilgrimagePlaces.map((p) => p.id)}
               showRouteLine={viewMode === 'route'}
               memberNameMap={memberNameMap}
               placeTypeTextMap={t.placeTypeLabels}
-              popupMembersLabel={t.popupTagMembers}
+              popupMembersLabel={t.popupMembersLabel}
               popupTypeLabel={t.popupTagType}
+              popupOverline={t.popupOverline}
+              popupNote={t.popupNote}
+              popupNoImageText={t.noImageText}
             />
           </div>
 
-          <aside ref={detailPanelRef} className="detail-floating-card">
+          <aside ref={detailPanelRef} className="detail-floating-card collection-detail-float">
             <PlaceDetailPanel
               place={selectedPlace}
-              members={members}
               placeTypes={placeTypes}
               userState={selectedState}
               isFavorite={!!selectedPlaceId && favoritePlaceIds.includes(selectedPlaceId)}
@@ -214,15 +249,14 @@ export default function HomePage() {
       </section>
 
       {viewMode === 'route' ? (
-        <section className="paper-panel route-surface mt-4 p-4">
-          <div className="mb-3">
-            <h3 className="hero-serif text-[30px] leading-none text-[#1f2a1f]">{t.routeList}</h3>
-            <p className="mt-1 text-sm text-[#55684f]">{t.routeHint}</p>
+        <section className="route-surface sugar-route-surface collection-route-surface mt-3 p-4">
+          <div className="mb-3 collection-route-head">
+            <h3 className="hero-serif text-[30px] leading-none text-[#7d6885]">{t.routeList}</h3>
+            {t.routeHint ? <p className="mt-1 text-sm text-[#9a889f]">{t.routeHint}</p> : null}
           </div>
 
           <PlaceList
             places={myPilgrimagePlaces}
-            members={members}
             placeTypes={placeTypes}
             selectedPlaceId={selectedPlaceId}
             onSelectPlace={setSelectedPlaceId}
@@ -231,9 +265,30 @@ export default function HomePage() {
             visitedPlaceIds={visitedPlaceIds}
             savedBadgeText={t.savedBadge}
             visitedBadgeText={t.visitedBadge}
+            descriptionFallback={t.descriptionFallback}
+            noImageText={t.noImageText}
+            wantLabel={t.wantToGo}
+            visitedLabel={t.visited}
+            onToggleFavorite={onToggleFavoriteById}
+            onToggleVisited={onToggleVisitedById}
           />
         </section>
       ) : null}
     </main>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

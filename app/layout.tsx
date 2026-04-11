@@ -1,10 +1,9 @@
 ﻿import type { Metadata } from 'next';
 import './globals.css';
-import { APP_NAME } from '@/lib/config';
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} MVP`,
-  description: 'NCT Pilgrimage Map MVP'
+  title: 'Sugar Rush Spots',
+  description: 'Sugar Rush Spots pilgrimage map'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,3 +13,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+

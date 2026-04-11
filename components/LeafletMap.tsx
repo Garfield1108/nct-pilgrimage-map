@@ -1,12 +1,12 @@
 ﻿// @ts-nocheck
 "use client";
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MapContainer, Marker, Popup, Polyline, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM } from '@/lib/config';
 import { Place } from '@/lib/types';
-import { memberGlyphSvgString, normalizePlaceTypeId, placeTypeGlyphSvgString } from './IconSystem';
+import { normalizePlaceTypeId, placeTypeGlyphSvgString } from './IconSystem';
 
 type LeafletMapProps = {
   places: Place[];
@@ -21,34 +21,40 @@ type LeafletMapProps = {
   placeTypeTextMap: Record<string, string>;
   popupMembersLabel: string;
   popupTypeLabel: string;
+  popupOverline: string;
+  popupNote: string;
+  popupNoImageText: string;
 };
 
-function createMarkerIcon(
-  active: boolean,
-  activeMemberId: string | null,
-  placeTypeId: string,
-  favorited: boolean,
-  visited: boolean
-) {
-  const iconStroke = active ? '#ffffff' : '#1f2a1f';
-  const glyph = activeMemberId
-    ? memberGlyphSvgString(activeMemberId, iconStroke)
-    : placeTypeGlyphSvgString(normalizePlaceTypeId(placeTypeId), iconStroke);
+function createMarkerIcon(active: boolean, placeTypeId: string, favorited: boolean, visited: boolean) {
+  const iconStroke = active || visited ? '#fffdf8' : '#5c4b43';
+  const glyph = placeTypeGlyphSvgString(normalizePlaceTypeId(placeTypeId), iconStroke);
 
-  const favoriteBadge = favorited ? '<span class="favorite-badge" title="saved">★</span>' : '';
-  const visitedBadge = visited ? '<span class="visited-badge" title="visited">✓</span>' : '';
-
-  const classes = ['map-marker-shell'];
+  const classes = ['map-marker-shell', 'collection-marker', 'simple-type-marker'];
   if (active) classes.push('is-selected');
   if (favorited) classes.push('is-saved');
   if (visited) classes.push('is-visited');
 
   return L.divIcon({
     className: '',
-    html: `<div class="${classes.join(' ')}"><span class="map-marker-glyph">${glyph}</span>${favoriteBadge}${visitedBadge}</div>`,
-    iconSize: active ? [40, 40] : [34, 34],
-    iconAnchor: active ? [20, 20] : [17, 17]
+    html: `<div class="${classes.join(' ')}"><span class="marker-core"><span class="map-marker-glyph">${glyph}</span></span></div>`,
+    iconSize: active ? [39, 39] : [34, 34],
+    iconAnchor: active ? [19.5, 19.5] : [17, 17]
   });
+}
+
+function MapRefreshController({ refreshKey }: { refreshKey: string }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      map.invalidateSize({ animate: false });
+    }, 80);
+
+    return () => window.clearTimeout(timer);
+  }, [map, refreshKey]);
+
+  return null;
 }
 
 function MapFocusController({ selectedPlace }: { selectedPlace?: Place }) {
@@ -65,10 +71,66 @@ function MapFocusController({ selectedPlace }: { selectedPlace?: Place }) {
   return null;
 }
 
-function miniGlyphHtml(activeMemberId: string | null, placeTypeId: string): string {
-  const glyph = activeMemberId
-    ? memberGlyphSvgString(activeMemberId, '#385030')
-    : placeTypeGlyphSvgString(normalizePlaceTypeId(placeTypeId), '#385030');
+function PlaceImagePopup({
+  place,
+  placeTypeId,
+  placeTypeLabel,
+  noImageText
+}: {
+  place: Place;
+  activeMemberId: string | null;
+  placeTypeId: string;
+  placeTypeLabel: string;
+  noImageText: string;
+}) {
+  const [imageIndex, setImageIndex] = useState(0);
+  const images = place.images ?? [];
+  const image = images[imageIndex];
+  const hasMultipleImages = images.length > 1;
+
+  const showPrevious = () => {
+    setImageIndex((current) => (current - 1 + images.length) % images.length);
+  };
+
+  const showNext = () => {
+    setImageIndex((current) => (current + 1) % images.length);
+  };
+
+  return (
+    <div className="memo-popup-card sugar-popup-card collection-popup-card image-popup-card polaroid-popup-card">
+      <div className="popup-photo-card polaroid-popup-frame">
+        {image ? (
+          <img src={image} alt={place.englishName} className="popup-place-image" />
+        ) : (
+          <div className="popup-place-image popup-image-empty">
+            <div className="popup-empty-card">
+              <span className="popup-empty-type">
+                <span dangerouslySetInnerHTML={{ __html: miniGlyphHtml(placeTypeId) }} />
+                {placeTypeLabel}
+              </span>
+              <p className="popup-empty-note">{noImageText}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {hasMultipleImages ? (
+        <div className="popup-image-controls polaroid-popup-controls" aria-label="image carousel controls">
+          <button type="button" onClick={showPrevious} className="popup-image-btn" aria-label="Previous image">
+            ‹
+          </button>
+          <span className="popup-image-count">{imageIndex + 1}/{images.length}</span>
+          <button type="button" onClick={showNext} className="popup-image-btn" aria-label="Next image">
+            ›
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function miniGlyphHtml(placeTypeId: string): string {
+  const glyph = placeTypeGlyphSvgString(normalizePlaceTypeId(placeTypeId), '#5c4b43');
   return `<span class="popup-mini-glyph">${glyph}</span>`;
 }
 
@@ -81,11 +143,11 @@ export default function LeafletMap({
   visitedPlaceIds,
   routePlaceIds,
   showRouteLine,
-  memberNameMap,
   placeTypeTextMap,
-  popupMembersLabel,
-  popupTypeLabel
+  popupNoImageText
 }: LeafletMapProps) {
+  const refreshKey = useMemo(() => [places.map((place) => place.id).join('|'), selectedPlaceId ?? ''].join('::'), [places, selectedPlaceId]);
+
   const selectedPlace = useMemo(
     () => places.find((place) => place.id === selectedPlaceId),
     [places, selectedPlaceId]
@@ -113,20 +175,21 @@ export default function LeafletMap({
       className="h-full w-full"
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; CARTO'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        opacity={0.88}
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        opacity={0.96}
       />
 
+      <MapRefreshController refreshKey={refreshKey} />
       <MapFocusController selectedPlace={selectedPlace} />
 
       {routePolyline.length > 1 ? (
         <Polyline
           positions={routePolyline}
           pathOptions={{
-            color: '#557148',
-            weight: 2.4,
-            opacity: 0.78,
+            color: '#f0a6c8',
+            weight: 2.5,
+            opacity: 0.84,
             dashArray: '4,7',
             lineCap: 'round',
             lineJoin: 'round'
@@ -139,35 +202,24 @@ export default function LeafletMap({
         const active = place.id === selectedPlaceId;
         const favorited = favoritePlaceIds.includes(place.id);
         const visited = visitedPlaceIds.includes(place.id);
-        const shortMembers = place.memberIds.slice(0, 2).map((id) => memberNameMap[id]).filter(Boolean);
         const placeTypeId = normalizePlaceTypeId(place.placeTypeId);
+        const placeTypeLabel = placeTypeTextMap?.[placeTypeId] ?? placeTypeId;
 
         return (
           <Marker
             key={place.id}
             position={[place.latitude, place.longitude]}
-            icon={createMarkerIcon(active, activeMemberId, placeTypeId, favorited, visited)}
+            icon={createMarkerIcon(active, placeTypeId, favorited, visited)}
             eventHandlers={{ click: () => onSelectPlace?.(place.id) }}
           >
-            <Popup className="custom-popup memo-popup" autoPan>
-              <div className="memo-popup-card">
-                <p className="popup-overline">NCT SPOT</p>
-                <div className="memo-popup-title">
-                  <span dangerouslySetInnerHTML={{ __html: miniGlyphHtml(activeMemberId, placeTypeId) }} />
-                  <p>{place.englishName}</p>
-                </div>
-
-                <div className="memo-popup-tags">
-                  <span className="memo-popup-tag">
-                    {popupTypeLabel}: {placeTypeTextMap[placeTypeId] ?? placeTypeId}
-                  </span>
-                  {shortMembers.length ? (
-                    <span className="memo-popup-tag">
-                      {popupMembersLabel}: {shortMembers.join(', ')}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
+            <Popup className="custom-popup memo-popup sugar-popup collection-popup image-popup" autoPan maxWidth={270} minWidth={210}>
+              <PlaceImagePopup
+                place={place}
+                activeMemberId={activeMemberId}
+                placeTypeId={placeTypeId}
+                placeTypeLabel={placeTypeLabel}
+                noImageText={popupNoImageText}
+              />
             </Popup>
           </Marker>
         );

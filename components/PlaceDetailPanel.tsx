@@ -1,13 +1,14 @@
 ﻿'use client';
 
+import { useEffect, useState } from 'react';
 import WantVisitedButtons from './WantVisitedButtons';
-import { MemberGlyph, PlaceTypeGlyph, normalizePlaceTypeId } from './IconSystem';
+import { PlaceTypeGlyph, normalizePlaceTypeId } from './IconSystem';
+import { buildAppleMapsDirectionsUrl, buildGoogleMapsDirectionsUrl } from '@/lib/map-links';
 import { Locale, uiText } from '@/lib/i18n';
-import { Member, Place, PlaceType, UserPlaceState } from '@/lib/types';
+import { Place, PlaceType, UserPlaceState } from '@/lib/types';
 
 type Props = {
   place?: Place;
-  members: Member[];
   placeTypes: PlaceType[];
   userState?: UserPlaceState;
   isFavorite: boolean;
@@ -18,7 +19,6 @@ type Props = {
 
 export default function PlaceDetailPanel({
   place,
-  members,
   placeTypes,
   userState,
   isFavorite,
@@ -27,55 +27,105 @@ export default function PlaceDetailPanel({
   onToggleVisited
 }: Props) {
   const t = uiText[locale];
+  const [showFullDescription, setShowFullDescription] = useState(false);
+
+  useEffect(() => {
+    setShowFullDescription(false);
+  }, [place?.id]);
 
   if (!place) {
-    return <div className="paper-panel p-4 text-sm text-[#4c5f49]">{t.selectPlace}</div>;
+    return <div className="paper-panel detail-empty-state collection-empty-card p-4 text-sm text-[#657056]">{t.selectPlace}</div>;
   }
 
-  const memberMap = new Map(members.map((m) => [m.id, m]));
   const rawType = placeTypes.find((p) => p.id === place.placeTypeId);
   const displayTypeId = normalizePlaceTypeId(place.placeTypeId);
   const displayTypeLabel = t.placeTypeLabels[displayTypeId as keyof typeof t.placeTypeLabels] ?? rawType?.label ?? 'Other';
-  const description = locale === 'zh' ? place.descriptionZh ?? place.description : place.description;
+  const description = (locale === 'zh' ? place.descriptionZh ?? place.description : place.description) || t.descriptionFallback;
+  const descriptionItems = description
+    .split(/\n+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const hasMoreDescription = descriptionItems.length > 3;
+  const visibleDescriptionItems = showFullDescription ? descriptionItems : descriptionItems.slice(0, 3);
+  const googleMapsUrl = buildGoogleMapsDirectionsUrl(place);
+  const appleMapsUrl = buildAppleMapsDirectionsUrl(place);
+  const addressLines = Array.from(
+    new Set([place.englishAddress, place.koreanAddress, place.address].map((item) => item?.trim()).filter(Boolean))
+  );
 
   return (
-    <div key={place.id} className="paper-panel detail-card-surface panel-fade overflow-hidden p-4 md:p-5">
-      <div className="detail-photo-frame">
-        <img src={place.images[0]} alt={place.englishName} className="h-44 w-full rounded-2xl object-cover" />
-      </div>
+    <div key={place.id} className="paper-panel detail-card-surface detail-shell sugar-detail-shell sugar-detail-card collection-detail-card panel-fade overflow-hidden p-4 md:p-4">
 
-      <section className="detail-section mt-4">
-        <p className="paper-kicker">{t.basicInfo}</p>
-        <h2 className="hero-serif mt-1 text-[32px] leading-[0.96] text-[#172116]">{place.englishName}</h2>
-        <p className="mt-1 text-sm text-[#4f6548]">{place.koreanName}</p>
-        <div className="mt-3 rounded-xl border border-[#d6e1cc] bg-[#f8fcf1] p-3">
-          <p className="text-xs text-[#4c6051]">{place.englishAddress}</p>
-          <p className="mt-1 text-xs text-[#657a68]">{place.koreanAddress}</p>
-        </div>
-      </section>
+      <section className="detail-header-block collection-header-block detail-header-no-photo">
+        <p className="paper-kicker detail-overline">{t.basicInfo}</p>
+        <div className="detail-title-row mt-2">
+          <div className="detail-title-stack">
+            <h2 className="hero-serif text-[31px] leading-[0.95] text-[#6f5d79]">{place.englishName}</h2>
+            <p className="detail-korean-name mt-1 text-sm text-[#9a89a0]">{place.koreanName}</p>
+          </div>
 
-      <section className="detail-section mt-4 border-t border-[#d8e3ce] pt-4">
-        <p className="paper-kicker">{t.relationInfo}</p>
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-          <span className="sticker-chip type-chip-pill">
+          <span className="tag-chip type-chip-pill detail-type-chip sugar-type-chip">
             <PlaceTypeGlyph placeTypeId={displayTypeId} className="h-4 w-4" />
             {displayTypeLabel}
           </span>
-          {place.memberIds.map((id) => (
-            <span key={id} className="tag-chip member-chip-pill">
-              <MemberGlyph memberId={id} className="h-3.5 w-3.5" />
-              {memberMap.get(id)?.displayName}
-            </span>
+        </div>
+
+        <div className="detail-address-card sugar-info-card collection-info-card mt-3">
+          {addressLines.map((address, addressIndex) => (
+            <p key={place.id + '-address-' + addressIndex} className={addressIndex === 0 ? 'text-xs text-[#7a625d]' : 'mt-1 text-xs text-[#9a8580]'}>
+              {address}
+            </p>
           ))}
         </div>
       </section>
 
-      <section className="detail-section mt-4 border-t border-[#d8e3ce] pt-4">
-        <p className="paper-kicker">{t.descriptionTitle}</p>
-        <p className="memo-note mt-2">{description}</p>
+      <section className="detail-map-links detail-block-divider">
+        <p className="paper-kicker detail-overline">{t.navigationTitle}</p>
+        <div className="nav-link-row mt-2">
+          <a href={googleMapsUrl} target="_blank" rel="noreferrer" className="nav-link-chip nav-link-google">
+            <span className="nav-link-dot" aria-hidden>
+              ↗
+            </span>
+            {t.googleMaps}
+          </a>
+          <a href={appleMapsUrl} target="_blank" rel="noreferrer" className="nav-link-chip nav-link-apple">
+            <span className="nav-link-dot" aria-hidden>
+              ↗
+            </span>
+            {t.appleMaps}
+          </a>
+        </div>
       </section>
 
-      <section className="detail-section mt-4 border-t border-[#d8e3ce] pt-4">
+      <section className="detail-note-block detail-block-divider">
+        <p className="paper-kicker detail-overline">{t.descriptionTitle}</p>
+        <div className="memo-note detail-note-copy sugar-note-card collection-note-paper mt-2">
+          <ul className="paw-note-list">
+            {visibleDescriptionItems.map((item, itemIndex) => (
+              <li key={`${place.id}-note-${itemIndex}`} className="paw-note-item">
+                <span className="paw-note-bullet" aria-hidden="true">
+                  <span className="paw-note-pad" />
+                  <span className="paw-note-toe toe-one" />
+                  <span className="paw-note-toe toe-two" />
+                  <span className="paw-note-toe toe-three" />
+                </span>
+                <p>{item}</p>
+              </li>
+            ))}
+          </ul>
+          {hasMoreDescription ? (
+            <button
+              type="button"
+              className="paw-note-toggle hand-note"
+              onClick={() => setShowFullDescription((current) => !current)}
+            >
+              {showFullDescription ? t.collapseDescription : t.expandDescription}
+            </button>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="detail-actions-shell detail-block-divider sugar-action-block">
         <WantVisitedButtons
           isFavorite={isFavorite}
           visited={!!userState?.visited}
@@ -84,8 +134,9 @@ export default function PlaceDetailPanel({
           wantLabel={t.wantToGo}
           visitedLabel={t.visited}
         />
-        <p className="mt-2 text-xs text-[#5c7259]">{t.actionHint}</p>
       </section>
     </div>
   );
 }
+
+

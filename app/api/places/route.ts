@@ -1,6 +1,57 @@
 ﻿import { NextResponse } from 'next/server';
+import imageManifest from '@/data/jw-image-manifest.json';
 import { places as mockPlaces } from '@/lib/mock-data';
+import { Place } from '@/lib/types';
 import { buildGoogleSheetsCsvUrl, parsePlacesFromGoogleSheetCsv } from '@/lib/google-sheets';
+
+const typedImageManifest = imageManifest as Record<string, string[]>;
+
+function buildIdPrefixes(placeId: string): string[] {
+  const prefixes = new Set<string>();
+  const normalized = placeId.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (normalized) prefixes.add(normalized);
+
+  const numericParts = placeId.match(/\d+/g);
+  if (numericParts?.length) {
+    const value = Number(numericParts[numericParts.length - 1]);
+    if (!Number.isNaN(value)) {
+      const padded = String(value).padStart(3, '0');
+      prefixes.add(padded);
+      prefixes.add(`JW${padded}`);
+    }
+  }
+
+  return [...prefixes];
+}
+
+function resolveLocalImagesById(placeId: string): string[] {
+  const prefixes = buildIdPrefixes(placeId);
+  if (!prefixes.length) return [];
+
+  const collected = new Set<string>();
+  for (const prefix of prefixes) {
+    const matches = typedImageManifest[prefix];
+    if (matches?.length) {
+      for (const imagePath of matches) {
+        collected.add(imagePath);
+      }
+    }
+  }
+
+  return [...collected];
+}
+
+function withResolvedImages(places: Place[]): Place[] {
+  return places.map((place) => {
+    const inferredImages = resolveLocalImagesById(place.id);
+    const mergedImages = Array.from(new Set([...inferredImages, ...place.images]));
+
+    return {
+      ...place,
+      images: mergedImages
+    };
+  });
+}
 
 export async function GET() {
   const sheetId = process.env.GOOGLE_SHEETS_ID;
@@ -21,8 +72,9 @@ export async function GET() {
       throw new Error(`Google Sheets request failed: ${response.status}`);
     }
 
-    const csv = await response.text();
-    const sheetPlaces = parsePlacesFromGoogleSheetCsv(csv);
+    const csv = new TextDecoder('utf-8').decode(await response.arrayBuffer());
+    const parsedPlaces = parsePlacesFromGoogleSheetCsv(csv);
+    const sheetPlaces = withResolvedImages(parsedPlaces);
 
     if (!sheetPlaces.length) {
       return NextResponse.json(

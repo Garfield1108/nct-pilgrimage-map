@@ -2,8 +2,24 @@
 
 const allowedMoodTags: PlaceMoodTag[] = ['hot', 'classic', 'hidden', 'photo-spot'];
 
+const jwSheetHeaders = [
+  'id',
+  'name',
+  'category',
+  'area',
+  'address_ko',
+  'address_zh',
+  'lat',
+  'lng',
+  'description',
+  'images',
+  'coord_method',
+  'coord_confidence',
+  'coord_source_url'
+];
+
 export function buildGoogleSheetsCsvUrl(sheetId: string, gid: string): string {
-  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
 }
 
 function parseCsv(text: string): string[][] {
@@ -59,8 +75,32 @@ function parseCsv(text: string): string[][] {
 function splitList(value: string | undefined): string[] {
   if (!value) return [];
   return value
-    .split('|')
+    .split(/[|,\n]/)
     .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function getField(row: Record<string, string>, ...keys: string[]): string {
+  for (const key of keys) {
+    const value = row[key] ?? row[key.toLowerCase()];
+    if (value && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+  return '';
+}
+
+function normalizeImagePath(raw: string): string {
+  const value = raw.trim();
+  if (!value) return '';
+  if (/^https?:\/\//i.test(value)) return value;
+  if (value.startsWith('/')) return value;
+  return `/jw-images/${value.replace(/^\.?\/+/, '')}`;
+}
+
+function parseImages(row: Record<string, string>): string[] {
+  return splitList(getField(row, 'images', 'imageUrls', 'image', 'imageUrl'))
+    .map(normalizeImagePath)
     .filter(Boolean);
 }
 
@@ -70,43 +110,99 @@ function toMoodTags(value: string | undefined): PlaceMoodTag[] | undefined {
 }
 
 function normalizePlaceType(placeTypeId: string): string {
-  return placeTypeId === 'shop' ? 'other' : placeTypeId;
+  const normalized = placeTypeId.trim().toLowerCase().replace(/_/g, '-');
+
+  if (normalized === 'cafe' || normalized === 'restaurant' || normalized === 'other') return normalized;
+  if (
+    normalized === 'filming' ||
+    normalized === 'filming spot' ||
+    normalized === 'filming-spot' ||
+    normalized === 'mv' ||
+    normalized === 'scene' ||
+    normalized === 'episode' ||
+    normalized === 'shooting'
+  ) {
+    return 'filming-spot';
+  }
+
+  return 'other';
+}
+
+function sourceNoteFromRow(row: Record<string, string>): string | undefined {
+  const parts = [
+    getField(row, 'sourceNote'),
+    getField(row, 'status'),
+    getField(row, 'coord_source_url')
+  ].filter(Boolean);
+
+  return parts.length ? parts.join(' | ') : undefined;
+}
+
+function buildDescriptionFromRow(row: Record<string, string>): string {
+  return getField(row, 'description');
 }
 
 function rowToPlace(row: Record<string, string>, index: number): Place | null {
-  const englishName = row.englishName || row.name;
-  const koreanName = row.koreanName || row.name || '';
-  const latitude = Number(row.latitude);
-  const longitude = Number(row.longitude);
+  const englishName = getField(row, 'englishName', 'name');
+  const koreanName = getField(row, 'koreanName');
+  const latitudeRaw = getField(row, 'latitude', 'lat');
+  const longitudeRaw = getField(row, 'longitude', 'lng', 'lon');
+  const latitude = Number(latitudeRaw);
+  const longitude = Number(longitudeRaw);
 
-  if (!englishName || Number.isNaN(latitude) || Number.isNaN(longitude)) {
+  if (!englishName || !latitudeRaw || !longitudeRaw || Number.isNaN(latitude) || Number.isNaN(longitude)) {
     return null;
   }
 
-  const memberIds = splitList(row.memberIds || row.members);
-  const images = splitList(row.images || row.imageUrls);
-  const placeTypeId = normalizePlaceType((row.placeTypeId || 'other').trim() || 'other');
+  const explicitMemberIds = splitList(getField(row, 'memberIds', 'members'));
+  const memberIds = explicitMemberIds.length ? explicitMemberIds : ['jungwoo'];
+  const images = parseImages(row);
+  const placeTypeId = normalizePlaceType(getField(row, 'placeTypeId', 'category') || 'other');
+  const koreanAddress = getField(row, 'koreanAddress', 'address_ko');
+  const englishAddress = getField(row, 'englishAddress', 'address', 'address_zh', 'address_cn');
+  const displayAddress = englishAddress || koreanAddress;
+  const name = getField(row, 'name') || englishName;
 
   return {
-    id: row.id || `sheet-place-${index + 1}`,
-    name: row.name || englishName,
-    address: row.address || row.englishAddress || '',
+    id: getField(row, 'id') || `sheet-place-${index + 1}`,
+    name,
+    address: displayAddress,
     englishName,
     koreanName,
-    englishAddress: row.englishAddress || row.address || '',
-    koreanAddress: row.koreanAddress || '',
+    englishAddress,
+    koreanAddress,
     latitude,
     longitude,
     memberIds,
     placeTypeId,
-    description: row.description || '',
-    descriptionZh: row.descriptionZh || undefined,
-    moodTags: toMoodTags(row.moodTags),
-    images: images.length
-      ? images
-      : ['https://images.unsplash.com/photo-1517248135467-4c7edcad34c4'],
-    sourceNote: row.sourceNote || undefined
+    description: buildDescriptionFromRow(row),
+    descriptionZh: getField(row, 'descriptionZh') || undefined,
+    moodTags: toMoodTags(getField(row, 'moodTags')),
+    images,
+    sourceNote: sourceNoteFromRow(row)
   };
+}
+
+function looksLikeStandardHeader(headers: string[]): boolean {
+  const normalized = headers.map((header) => header.trim().toLowerCase());
+  return normalized.includes('id') && (normalized.includes('englishname') || normalized.includes('name'));
+}
+
+function normalizeLooseHeader(cell: string, fallback: string): string {
+  const key = cell.trim().split(/\s+/)[0];
+  return key || fallback;
+}
+
+function rowsToObjects(headers: string[], dataRows: string[][]): Record<string, string>[] {
+  return dataRows.map((values) => {
+    const row: Record<string, string> = {};
+    headers.forEach((key, keyIndex) => {
+      const value = (values[keyIndex] ?? '').trim();
+      row[key] = value;
+      row[key.toLowerCase()] = value;
+    });
+    return row;
+  });
 }
 
 export function parsePlacesFromGoogleSheetCsv(csvText: string): Place[] {
@@ -115,14 +211,13 @@ export function parsePlacesFromGoogleSheetCsv(csvText: string): Place[] {
 
   const [headers, ...dataRows] = rows;
   const keys = headers.map((header) => header.trim());
+  const useStandardHeader = looksLikeStandardHeader(keys);
+  const objects = useStandardHeader ? rowsToObjects(keys, dataRows) : rowsToObjects(jwSheetHeaders, rows.slice(1));
 
-  return dataRows
-    .map((values, index) => {
-      const row: Record<string, string> = {};
-      keys.forEach((key, keyIndex) => {
-        row[key] = (values[keyIndex] ?? '').trim();
-      });
-      return rowToPlace(row, index);
-    })
-    .filter(Boolean) as Place[];
+  return objects.map((row, index) => rowToPlace(row, index)).filter(Boolean) as Place[];
 }
+
+
+
+
+

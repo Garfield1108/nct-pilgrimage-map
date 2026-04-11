@@ -1,0 +1,7 @@
+id,name,query,lat,lng,confidence,reason,sourceUrl
+JW006,OLDEN BROWN,?? ??? ??? ????52?? 17-7 1?,,,unresolved,Nominatim returned no result for the exact address.,
+JW010,???? ?????,?? ??? ???? 137,37.5462368,127.0514127,low,Road-level candidate only; current sheet has parcel address ????? ??? ???2? 277-156.,https://nominatim.openstreetmap.org/search?format=json&limit=1&q=%EC%84%9C%EC%9A%B8%20%EC%84%B1%EB%8F%99%EA%B5%AC%20%EC%95%84%EC%B0%A8%EC%82%B0%EB%A1%9C%20137
+JW013,Seongsuil-ro-gil 60 ??,???2? 300-39 / ????? 300-39,,,unresolved,No reliable geocoder result from the current address text.,
+JW014,?????????,??????????? ?????,,,unresolved,Needs a precise Japanese address or map link.,
+JW015,??? (peullopi),?? ??? ????1?? 10,37.5488106,127.0463813,low,Road-level candidate only; current sheet has parcel address ????? ??? ???1? 656-544.,https://nominatim.openstreetmap.org/search?format=json&limit=1&q=%EC%84%9C%EC%9A%B8%20%EC%84%B1%EB%8F%99%EA%B5%AC%20%EC%95%84%EC%B0%A8%EC%82%B0%EB%A1%9C1%EA%B0%80%EA%B8%B8%2010
+JW021,??????,?? ??? ????5? 12-3,37.5471039,127.0441895,low,Road-level candidate only; current sheet has parcel address ???1? 656-936.,https://nominatim.openstreetmap.org/search?format=json&limit=1&q=%EC%84%9C%EC%9A%B8%20%EC%84%B1%EB%8F%99%EA%B5%AC%20%EC%99%95%EC%8B%AD%EB%A6%AC%EB%A1%9C5%EA%B8%B8%2012-3

@@ -1,0 +1,22 @@
+id,name,category,area,address_ko,address_zh,lat,lng,description,route,opening_hours,tips,status,images
+JW001,???,cafe,Seongsu,,圣水站四号口附近,,,同款对镜拍,圣水站4号口附近,,,unknown,JW001-1.png
+JW002,江南同款咖啡厅（待确认）,cafe,Gangnam,?? ??? ??? 636 ?????,,,,江南同款咖啡厅,,,店名待确认,needs_name_confirm,JW002-1.png
+JW003,圣水同款咖啡厅（待确认）,cafe,Seongsu,?? ??? ????4??13,,,,圣水同款咖啡厅,,,店名待确认,needs_name_confirm,JW003-1.png
+JW004,VELVET TRUNK,cafe,Seongsu,?? ??? ???? 88 B1F,圣水洞二街 317-12,,,圣水同款咖啡厅,,,,unknown,"JW004-1.jpg,JW004-2.jpg"
+JW005,??????????,school,Gimpo,"69 ???, ???, ???, ??? (??? 477)","金浦第一工业高中 69 奉化路, 北边洞, 金浦市, 京畿道 (北边洞 477)",,,廷廷的高中,金浦金线-gold line 到沙隅站 1号口出；从首尔坐地铁/公交过去约两个小时,,,unknown,JW005-1.png
+JW006,OLDEN BROWN,cafe,Seongnam/Pangyo,?? ??? ??? ????52?? 17-7 1?,,,,来源小狗 2024-03-28 更新的 ins；偏美式复古风的咖啡厅,书岘站4号口约920m；板桥站2号口约1.3km，步行约20分钟,,离首尔较远,unknown,"JW006-1.png,JW006.png"
+JW007,daeo 书店,bookstore,Jongno,"33 Nuha-dong, Jongno-gu, Seoul",,,,《春天的阵雨》MV 里廷祐拍摄的书店,,12:00 开门,如果进去的话要买咖啡,unknown,JW007-1.png
+JW008,???,restaurant,Songpa,????? ??? ??? 182-5,,,,金廷祐同款汤饭；点的是辣味汤饭,,24小时营业,,unknown,"JW008-1.jpg,JW008-2.jpg"
+JW009,爷爷工厂,cafe,Seongsu,????? ??? ???2? 309-133,,,,咖啡厅爷爷工厂,,,貌似已经关门了,possibly_closed,"JW009-1.png,JW009-2.png"
+JW010,???? ??直营店,restaurant,Seongsu,????? ??? ???2? 277-156,,,,廷祐和道英被偶遇的那家,,,晚上九点多快十点去人也很多；店里暖气足，味道也不错,unknown,JW010-1.png
+JW011,石村湖,spot,Songpa,????? ??? ??? 32,,,,,,,,unknown,JW011-1.png
+JW012,wikeo park west,cafe,Songpa,????? ??? ??? 158-5,,,,应该就是普通的冰美,,,,unknown,JW012-1.png
+JW013,Seongsuil-ro-gil 60 街景,spot,Seongsu,,圣水洞二街 300-39,,,,,,更像机位/街景点，具体点位待确认,needs_location_confirm,JW013-1.png
+JW014,渋谷中央支店旁巷子,spot,Shibuya,,みずほ銀行渋谷中央支店 旁边的巷子,,,,,,导航过去一下就能找到,unknown,JW014-1.png
+JW015,??? (peullopi),cafe,Seongsu,????? ??? ???1? 656-544,,,,,,,店门口字母跟 Naver 上店名不一样，要注意看,unknown,"JW015-1.png,JW015-2.png"
+JW016,?????,restaurant,Jongno,?? ??? ??36?? 9,,,,《Nopogy》EP.17 #cravity 亨俊 & #kissoflife Natty,钟路五街站5号出口步行275m,每日10:00-22:00（每月第2、4、5周周日休息）,,unknown,"JW016-1.png,JW016-2.png,JW016-3.png"
+JW017,?????,restaurant,Yongsan,?? ??? ???? 38-1,,,,《Nopogy》EP.18 #nct #nct127 道英,绿莎坪站2号口步行708m,每天 15:00-02:30,人工点单，可打包，现金/银行卡；金道英/金廷祐老铺记同款炸鸡打卡,unknown,"JW017-1.png,JW017-2.png"
+JW018,???????,restaurant,Gimpo,?? ??? ???1915?? 53 ???????,,,,《Nopogy》EP.19 #ateez 星化 友荣 钟浩,在金浦市，无地铁直达,每日11:30-20:30（最后下单19:30）,每月有不固定休息日，建议提前确认,unknown,"JW018-1.png,JW018-2.png,JW018-3.png"
+JW019,???,restaurant,Jung-gu,?? ?? ????8? 32,,,,《Nopogy》EP.20 #nctdream 楷灿 志晟,乙支路四街站4号口步行223m,每日10:00-22:00（最后下单21:30）,一人份泡菜汤13:30后提供；烤五花肉晚上才提供,unknown,"JW019-1.png,JW019-2.png,JW019-3.png.png"
+JW020,???? ?????,restaurant,Gangnam,?? ??? ???172? 55,,,,同款铁板鸡 金廷祐,,,,unknown,/
+JW021,纛岛炭烤排骨,restaurant,Seongsu,,首尔特别市 城东区 圣水洞一街 656-936,,,金廷祐同款烤肉店,,11:00-24:00,离 SM 非常近，走路 4 分钟,unknown,/

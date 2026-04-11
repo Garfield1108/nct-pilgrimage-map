@@ -1,10 +1,10 @@
 ﻿import { members, places, placeTypes } from '../mock-data';
 import { filterPlaces } from '../filters';
 import {
-  getFavoritePlaceIds,
+  getFavorites,
   getUserPlaceStates,
-  toggleFavoritePlaceId,
-  upsertUserPlaceState
+  toggleFavorite,
+  toggleVisited as toggleVisitedLocal
 } from '../storage';
 import { Member, Place, PlaceFilters, PlaceType, UserPlaceState } from '../types';
 
@@ -25,17 +25,16 @@ const localStateAdapter = {
   },
 
   async toggleVisited(sessionId: string, placeId: string) {
-    const states = getUserPlaceStates(sessionId);
-    const current = states.find((s) => s.placeId === placeId);
-    return upsertUserPlaceState(sessionId, placeId, { visited: !(current?.visited ?? false) });
+    toggleVisitedLocal(placeId);
+    return getUserPlaceStates(sessionId);
   },
 
   async getFavoritePlaceIds() {
-    return getFavoritePlaceIds();
+    return getFavorites();
   },
 
   async toggleFavoritePlaceId(placeId: string) {
-    return toggleFavoritePlaceId(placeId);
+    return toggleFavorite(placeId);
   }
 };
 
