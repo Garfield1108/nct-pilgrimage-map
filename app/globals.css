@@ -6102,12 +6102,19 @@ body,
     align-items: center !important;
     flex-wrap: nowrap !important;
     gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .collection-search-shell {
+    display: flex !important;
+    align-items: center !important;
     overflow: hidden !important;
     border-radius: 26px !important;
     padding: 4px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .collection-search-shell::before,
@@ -6123,6 +6130,13 @@ body,
     height: 50px !important;
     padding-right: 14px !important;
     padding-left: 42px !important;
+    box-sizing: border-box !important;
+  }
+
+  .collection-search-input::placeholder,
+  .paper-search-input::placeholder {
+    color: #8f86a0 !important;
+    opacity: 1 !important;
   }
 
   .search-action-btn,
@@ -6138,6 +6152,7 @@ body,
     justify-content: center !important;
     padding-inline: 16px !important;
     white-space: nowrap !important;
+    margin-left: auto !important;
   }
 
   .search-action-btn:hover,

@@ -4,12 +4,12 @@ export const LOCALE_STORAGE_KEY = 'nct-ui-locale';
 
 export const uiText = {
   zh: {
-    subtitle: '跟着廷祐，开启一场圣地巡礼。',
+    subtitle: 'Follow Jungwoo on a pilgrimage through these places.',
     headerTitle: 'Sugaring Seoul',
     coverNote: '给 sugaringcandy 的私人收藏页',
     heroSubtitle: 'A JOURNEY THROUGH JUNGWOO\'S SEOUL',
     heroScroll: '[ SCROLL TO OPEN BOX ]',
-    searchPlaceholder: '搜索廷祐相关地点或首尔区域',
+    searchPlaceholder: '试着输入地名试试看',
     searchAction: '搜索',
     placeType: '地点类型',
     allPlaceTypes: '全选',
@@ -61,7 +61,7 @@ export const uiText = {
     coverNote: 'a private page for sugaringcandy',
     heroSubtitle: 'A JOURNEY THROUGH JUNGWOO\'S SEOUL',
     heroScroll: '[ SCROLL TO OPEN BOX ]',
-    searchPlaceholder: 'Search Jungwoo spots or Seoul areas',
+    searchPlaceholder: 'Try typing a place name',
     searchAction: 'Search',
     placeType: 'Place type',
     allPlaceTypes: 'All',
