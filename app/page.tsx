@@ -38,6 +38,9 @@ function toSoloPlaces(places: Place[]): Place[] {
 export default function HomePage() {
   const [locale, setLocale] = useState<Locale>('zh');
   const [viewMode, setViewMode] = useState<ViewMode>('all');
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
+  const [mobileMapDetailOpen, setMobileMapDetailOpen] = useState(false);
+  const [expandedRoutePlaceId, setExpandedRoutePlaceId] = useState<string>();
   const [members, setMembers] = useState<Member[]>([]);
   const [placeTypes, setPlaceTypes] = useState<PlaceType[]>([]);
   const [filters, setFilters] = useState<PlaceFilters>(defaultFilters);
@@ -53,6 +56,25 @@ export default function HomePage() {
 
   useEffect(() => {
     setLocale(getStoredLocale());
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const mediaQuery = window.matchMedia('(max-width: 1023px)');
+    const syncViewport = () => {
+      setIsMobileLayout(mediaQuery.matches);
+    };
+
+    syncViewport();
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', syncViewport);
+      return () => mediaQuery.removeEventListener('change', syncViewport);
+    }
+
+    mediaQuery.addListener(syncViewport);
+    return () => mediaQuery.removeListener(syncViewport);
   }, []);
 
   useEffect(() => {
@@ -88,6 +110,7 @@ export default function HomePage() {
   }, [filters]);
 
   const visitedPlaceIds = useMemo(() => states.filter((s) => s.visited).map((s) => s.placeId), [states]);
+  const stateByPlaceId = useMemo(() => new Map(states.map((state) => [state.placeId, state])), [states]);
 
   const myPilgrimagePlaces = useMemo(() => {
     const ids = Array.from(new Set([...favoritePlaceIds, ...visitedPlaceIds]));
@@ -109,14 +132,65 @@ export default function HomePage() {
   }, [visiblePlaces, selectedPlaceId]);
 
   useEffect(() => {
-    if (selectedPlaceId) {
+    if (!isMobileLayout && selectedPlaceId) {
       detailPanelRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [selectedPlaceId]);
+  }, [isMobileLayout, selectedPlaceId]);
+
+  useEffect(() => {
+    if (viewMode !== 'all') {
+      setMobileMapDetailOpen(false);
+    }
+  }, [viewMode]);
+
+  useEffect(() => {
+    if (!isMobileLayout) {
+      setMobileMapDetailOpen(false);
+    }
+  }, [isMobileLayout]);
+
+  useEffect(() => {
+    if (!visiblePlaces.length) {
+      setExpandedRoutePlaceId(undefined);
+      return;
+    }
+
+    if (expandedRoutePlaceId && !visiblePlaces.some((place) => place.id === expandedRoutePlaceId)) {
+      setExpandedRoutePlaceId(undefined);
+    }
+  }, [expandedRoutePlaceId, visiblePlaces]);
+
+  useEffect(() => {
+    if (viewMode !== 'route' || !isMobileLayout || !expandedRoutePlaceId) return;
+
+    const card = document.getElementById(`collection-card-${expandedRoutePlaceId}`);
+    card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [expandedRoutePlaceId, isMobileLayout, viewMode]);
 
   const selectedPlace = useMemo(() => visiblePlaces.find((p) => p.id === selectedPlaceId), [visiblePlaces, selectedPlaceId]);
   const selectedState = useMemo(() => states.find((s) => s.placeId === selectedPlaceId), [states, selectedPlaceId]);
   const memberNameMap = useMemo(() => Object.fromEntries(members.map((m) => [m.id, m.displayName])), [members]);
+
+  const selectPlaceFromMap = (placeId: string) => {
+    setSelectedPlaceId(placeId);
+
+    if (isMobileLayout && viewMode === 'all') {
+      setMobileMapDetailOpen(true);
+      return;
+    }
+
+    if (isMobileLayout && viewMode === 'route') {
+      setExpandedRoutePlaceId(placeId);
+    }
+  };
+
+  const selectPlaceFromRouteList = (placeId: string) => {
+    setSelectedPlaceId(placeId);
+
+    if (isMobileLayout) {
+      setExpandedRoutePlaceId((current) => (current === placeId ? undefined : placeId));
+    }
+  };
 
   const switchLocale = (next: Locale) => {
     setLocale(next);
@@ -149,7 +223,7 @@ export default function HomePage() {
 
   return (
     <main className="archive-page sugar-archive-page collection-page mx-auto max-w-[1720px] px-4 pb-6 pt-3 md:px-8 md:pt-4">
-      <section className="snoopy-hero mb-3">
+      <section className="snoopy-hero mb-2 md:mb-3">
                 <nav className="snoopy-nav" aria-label="hero nav">
           <button type="button" className={`snoopy-nav-tab ${locale === 'zh' ? 'active' : ''}`} onClick={() => switchLocale('zh')}>
             中文 CN
@@ -199,7 +273,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="filter-ribbon keepsake-filter-ribbon mb-3 p-2.5 md:p-3.5">
+      <section className="filter-ribbon keepsake-filter-ribbon mb-2 p-2.5 md:mb-3 md:p-3.5">
         <FilterPanel
           placeTypes={placeTypes}
           filters={filters}
@@ -212,13 +286,13 @@ export default function HomePage() {
         />
       </section>
 
-      <section className="map-led-stage stage-shell sugar-stage collection-stage p-2.5">
+      <section className="map-led-stage stage-shell sugar-stage collection-stage p-2 md:p-2.5">
         <div className="map-canvas-wrap collection-stage-wrap">
-          <div className="map-stage-frame collection-map-stage h-[58vh] min-h-[360px] overflow-hidden rounded-[24px] sm:h-[64vh] sm:min-h-[420px] lg:h-[74vh] lg:min-h-[600px]">
+          <div className="map-stage-frame collection-map-stage h-[400px] min-h-0 overflow-hidden rounded-[24px] sm:h-[480px] lg:h-[74vh] lg:min-h-[600px]">
             <LeafletMap
               places={visiblePlaces}
               selectedPlaceId={selectedPlaceId}
-              onSelectPlace={setSelectedPlaceId}
+              onSelectPlace={selectPlaceFromMap}
               activeMemberId={null}
               favoritePlaceIds={favoritePlaceIds}
               visitedPlaceIds={visitedPlaceIds}
@@ -232,24 +306,51 @@ export default function HomePage() {
               popupNote={t.popupNote}
               popupNoImageText={t.noImageText}
             />
+
+            {isMobileLayout && viewMode === 'all' && mobileMapDetailOpen && selectedPlace ? (
+              <div className="mobile-map-detail-sheet">
+                <div className="mobile-map-detail-sheet-inner">
+                  <span className="mobile-detail-sheet-grab" aria-hidden />
+                  <button
+                    type="button"
+                    className="mobile-detail-sheet-close"
+                    onClick={() => setMobileMapDetailOpen(false)}
+                    aria-label={t.closeDetail}
+                  >
+                    {t.closeDetail}
+                  </button>
+                  <PlaceDetailPanel
+                    place={selectedPlace}
+                    placeTypes={placeTypes}
+                    userState={selectedState}
+                    isFavorite={!!selectedPlaceId && favoritePlaceIds.includes(selectedPlaceId)}
+                    locale={locale}
+                    onToggleFavorite={onToggleFavorite}
+                    onToggleVisited={onToggleVisited}
+                  />
+                </div>
+              </div>
+            ) : null}
           </div>
 
-          <aside ref={detailPanelRef} className="detail-floating-card collection-detail-float">
-            <PlaceDetailPanel
-              place={selectedPlace}
-              placeTypes={placeTypes}
-              userState={selectedState}
-              isFavorite={!!selectedPlaceId && favoritePlaceIds.includes(selectedPlaceId)}
-              locale={locale}
-              onToggleFavorite={onToggleFavorite}
-              onToggleVisited={onToggleVisited}
-            />
-          </aside>
+          {!isMobileLayout ? (
+            <aside ref={detailPanelRef} className="detail-floating-card collection-detail-float">
+              <PlaceDetailPanel
+                place={selectedPlace}
+                placeTypes={placeTypes}
+                userState={selectedState}
+                isFavorite={!!selectedPlaceId && favoritePlaceIds.includes(selectedPlaceId)}
+                locale={locale}
+                onToggleFavorite={onToggleFavorite}
+                onToggleVisited={onToggleVisited}
+              />
+            </aside>
+          ) : null}
         </div>
       </section>
 
       {viewMode === 'route' ? (
-        <section className="route-surface sugar-route-surface collection-route-surface mt-3 p-4">
+        <section className="route-surface sugar-route-surface collection-route-surface mt-2 p-3 md:mt-3 md:p-4">
           <div className="mb-3 collection-route-head">
             <h3 className="hero-serif text-[30px] leading-none text-[#7d6885]">{t.routeList}</h3>
             {t.routeHint ? <p className="mt-1 text-sm text-[#9a889f]">{t.routeHint}</p> : null}
@@ -259,7 +360,9 @@ export default function HomePage() {
             places={myPilgrimagePlaces}
             placeTypes={placeTypes}
             selectedPlaceId={selectedPlaceId}
-            onSelectPlace={setSelectedPlaceId}
+            expandedPlaceId={isMobileLayout ? expandedRoutePlaceId : undefined}
+            activeBadgeText={t.viewingBadge}
+            onSelectPlace={selectPlaceFromRouteList}
             emptyText={t.routeEmpty}
             favoritePlaceIds={favoritePlaceIds}
             visitedPlaceIds={visitedPlaceIds}
@@ -271,6 +374,21 @@ export default function HomePage() {
             visitedLabel={t.visited}
             onToggleFavorite={onToggleFavoriteById}
             onToggleVisited={onToggleVisitedById}
+            renderExpandedContent={
+              isMobileLayout
+                ? (place) => (
+                    <PlaceDetailPanel
+                      place={place}
+                      placeTypes={placeTypes}
+                      userState={stateByPlaceId.get(place.id)}
+                      isFavorite={favoritePlaceIds.includes(place.id)}
+                      locale={locale}
+                      onToggleFavorite={() => void onToggleFavoriteById(place.id)}
+                      onToggleVisited={() => void onToggleVisitedById(place.id)}
+                    />
+                  )
+                : undefined
+            }
           />
         </section>
       ) : null}
