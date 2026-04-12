@@ -4,7 +4,7 @@ export const LOCALE_STORAGE_KEY = 'nct-ui-locale';
 
 export const uiText = {
   zh: {
-    subtitle: '把和廷祐有关的首尔糖分地点，一页页夹进私人的收藏册。',
+    subtitle: '跟着廷祐，开启一场圣地巡礼。',
     headerTitle: 'Sugaring Seoul',
     coverNote: '给 sugaringcandy 的私人收藏页',
     heroSubtitle: 'A JOURNEY THROUGH JUNGWOO\'S SEOUL',
@@ -56,7 +56,7 @@ export const uiText = {
     }
   },
   en: {
-    subtitle: 'A private scrapbook of Seoul places that feel like Jungwoo.',
+    subtitle: 'Follow Jungwoo on a pilgrimage through these places.',
     headerTitle: 'Sugaring Seoul',
     coverNote: 'a private page for sugaringcandy',
     heroSubtitle: 'A JOURNEY THROUGH JUNGWOO\'S SEOUL',

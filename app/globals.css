@@ -6098,13 +6098,16 @@ body,
   .filter-search-wrap,
   .filter-search-row {
     display: flex !important;
-    flex-direction: column !important;
-    gap: 10px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
   }
 
   .collection-search-shell {
-    overflow: visible !important;
+    overflow: hidden !important;
     border-radius: 26px !important;
+    padding: 4px !important;
   }
 
   .collection-search-shell::before,
@@ -6114,10 +6117,11 @@ body,
 
   .paper-search-input,
   .collection-search-input {
-    width: 100% !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
     min-width: 0 !important;
     height: 50px !important;
-    padding-right: 16px !important;
+    padding-right: 14px !important;
     padding-left: 42px !important;
   }
 
@@ -6127,11 +6131,13 @@ body,
     top: auto !important;
     right: auto !important;
     transform: none !important;
-    width: 100% !important;
-    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 78px !important;
     height: 44px !important;
     justify-content: center !important;
     padding-inline: 16px !important;
+    white-space: nowrap !important;
   }
 
   .search-action-btn:hover,
@@ -6220,6 +6226,8 @@ body,
   .search-action-btn,
   .collection-search-btn {
     height: 42px !important;
+    min-width: 72px !important;
+    padding-inline: 14px !important;
   }
 }
 /* mobile-responsive-fixes-end */
