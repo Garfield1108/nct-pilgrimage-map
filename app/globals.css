@@ -5974,6 +5974,303 @@ body,
   color: var(--sugar-ink) !important;
 }
 
+/* mobile-responsive-fixes-start */
+@media (max-width: 1023px) {
+  .map-canvas-wrap,
+  .collection-stage-wrap {
+    display: block !important;
+  }
+
+  .detail-floating-card,
+  .collection-detail-float {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    max-height: none !important;
+    margin-top: 12px !important;
+    overflow: visible !important;
+  }
+
+  .collection-detail-card,
+  .detail-card-surface {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 767px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .archive-page,
+  .collection-page,
+  .map-led-stage,
+  .collection-stage,
+  .route-surface,
+  .collection-route-surface,
+  .collection-detail-card,
+  .detail-card-surface {
+    min-width: 0 !important;
+  }
+
+  .snoopy-hero {
+    height: auto !important;
+    min-height: 0 !important;
+    padding-top: 0.4rem !important;
+    padding-bottom: 0.2rem !important;
+    margin-bottom: 10px !important;
+    overflow: visible !important;
+  }
+
+  .snoopy-hero-content {
+    width: 100%;
+    max-width: 100%;
+    transform: translateY(-2px) !important;
+    padding-inline: 6px;
+  }
+
+  .snoopy-hero-title {
+    font-size: clamp(2.6rem, 14vw, 3.8rem) !important;
+  }
+
+  .snoopy-hero-sub {
+    margin-top: 0.35rem !important;
+    font-size: clamp(1rem, 5vw, 1.2rem) !important;
+    line-height: 1.45 !important;
+    max-width: 100% !important;
+    padding-inline: 8px;
+  }
+
+  .snoopy-nav {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    margin-bottom: 0.7rem !important;
+    padding-right: 0 !important;
+  }
+
+  .snoopy-nav-tab {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0.5rem 0.85rem !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap;
+  }
+
+  .snoopy-paw-deco {
+    width: 44px !important;
+    height: 44px !important;
+    opacity: 0.42 !important;
+  }
+
+  .snoopy-paw-deco.paw-top-left {
+    top: 12% !important;
+    left: 4% !important;
+  }
+
+  .snoopy-paw-deco.paw-bottom-right {
+    right: 5% !important;
+    bottom: 2% !important;
+    transform: scale(0.82) !important;
+  }
+
+  .snoopy-floating-candy {
+    top: 16% !important;
+    right: 5% !important;
+    width: 46px !important;
+    height: 30px !important;
+  }
+
+  .filter-ribbon,
+  .keepsake-filter-ribbon {
+    padding: 10px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .filter-search-wrap,
+  .filter-search-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .collection-search-shell {
+    overflow: visible !important;
+    border-radius: 26px !important;
+  }
+
+  .collection-search-shell::before,
+  .collection-search-shell::after {
+    display: none !important;
+  }
+
+  .paper-search-input,
+  .collection-search-input {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 50px !important;
+    padding-right: 16px !important;
+    padding-left: 42px !important;
+  }
+
+  .search-action-btn,
+  .collection-search-btn {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 44px !important;
+    justify-content: center !important;
+    padding-inline: 16px !important;
+  }
+
+  .search-action-btn:hover,
+  .collection-search-btn:hover {
+    transform: none !important;
+  }
+
+  .chip-track,
+  .collection-chip-track {
+    gap: 10px !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    padding-bottom: 6px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .chip-track::-webkit-scrollbar,
+  .collection-chip-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .collection-chip-track .sticker-filter,
+  .collection-chip-track .keepsake-chip,
+  .sticker-filter,
+  .keepsake-chip {
+    flex: 0 0 auto !important;
+    min-height: 42px !important;
+    padding-inline: 14px !important;
+    white-space: nowrap !important;
+  }
+
+  .map-led-stage,
+  .collection-stage {
+    padding: 10px !important;
+  }
+
+  .map-stage-frame,
+  .collection-map-stage {
+    border-radius: 20px !important;
+  }
+
+  .collection-map-stage .leaflet-container,
+  .map-stage-frame .leaflet-container {
+    min-height: 320px !important;
+  }
+
+  .memo-popup .leaflet-popup-content-wrapper,
+  .polaroid-popup-card,
+  .image-popup-card,
+  .memo-popup-card {
+    width: min(240px, calc(100vw - 56px)) !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 56px) !important;
+  }
+}
+
+@media (max-width: 479px) {
+  .archive-page {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .snoopy-hero {
+    padding-top: 0.15rem !important;
+  }
+
+  .snoopy-nav {
+    gap: 7px !important;
+  }
+
+  .snoopy-nav-tab {
+    padding: 0.46rem 0.72rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .snoopy-paw-deco.paw-bottom-right {
+    display: none !important;
+  }
+
+  .paper-search-input,
+  .collection-search-input {
+    height: 48px !important;
+  }
+
+  .search-action-btn,
+  .collection-search-btn {
+    height: 42px !important;
+  }
+}
+/* mobile-responsive-fixes-end */
+
+.local-place-image-shell {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+.local-place-image {
+  display: block;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.local-place-image-shell.is-loaded .local-place-image {
+  opacity: 1;
+}
+
+.local-place-image-skeleton {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(110deg, rgba(255, 248, 251, 0.96) 8%, rgba(252, 231, 239, 0.98) 24%, rgba(255, 248, 251, 0.96) 40%);
+  background-size: 200% 100%;
+  animation: local-image-shimmer 1.2s linear infinite;
+}
+
+.popup-place-image-shell {
+  min-height: 180px;
+  border-radius: 6px;
+  background: #fffafc;
+}
+
+.collection-card-image-shell {
+  width: 100%;
+  min-height: 9rem;
+  border-radius: 0.75rem;
+  background: #fffafc;
+}
+
+@keyframes local-image-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .save-btn.active {
   background: linear-gradient(180deg, #fff2bd 0%, #f6df94 100%) !important;
   color: #6e5f3c !important;

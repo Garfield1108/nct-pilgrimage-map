@@ -3,6 +3,7 @@
 import { KeyboardEvent, MouseEvent } from 'react';
 import { Place, PlaceType } from '@/lib/types';
 import { CandyGlyph, PlaceTypeGlyph, normalizePlaceTypeId } from './IconSystem';
+import LocalPlaceImage from './LocalPlaceImage';
 
 type Props = {
   places: Place[];
@@ -88,7 +89,8 @@ export default function PlaceList({
         const isSaved = favoritePlaceIds.includes(place.id);
         const isVisited = visitedPlaceIds.includes(place.id);
         const blurb = place.description || descriptionFallback;
-        const coverImage = place.images[0];
+        const coverImage = place.thumbnailImages?.[0] ?? place.images[0];
+        const fullCoverImage = place.images[0];
 
         return (
           <article
@@ -103,7 +105,15 @@ export default function PlaceList({
 
             <div className="polaroid-top collection-media sugar-media-frame collection-photo-card">
               {coverImage ? (
-                <img src={coverImage} alt={place.englishName} className="h-36 w-full rounded-xl bg-[#fffafc] object-contain" />
+                <LocalPlaceImage
+                  src={coverImage}
+                  fallbackSrc={fullCoverImage}
+                  alt={place.englishName}
+                  className="h-36 w-full rounded-xl bg-[#fffafc] object-contain"
+                  wrapperClassName="collection-card-image-shell"
+                  loading="lazy"
+                  fetchPriority="low"
+                />
               ) : (
                 <div className="collection-no-image-card h-36 w-full rounded-xl border border-dashed border-[#dccfd7] bg-[#fffafc]">
                   <span className="collection-no-image-type">

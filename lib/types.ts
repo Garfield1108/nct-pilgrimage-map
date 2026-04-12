@@ -28,6 +28,7 @@ export type Place = {
   descriptionZh?: string;
   moodTags?: PlaceMoodTag[];
   images: string[];
+  thumbnailImages?: string[];
   sourceNote?: string;
 };
 

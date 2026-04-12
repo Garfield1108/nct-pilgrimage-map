@@ -214,7 +214,7 @@ export default function HomePage() {
 
       <section className="map-led-stage stage-shell sugar-stage collection-stage p-2.5">
         <div className="map-canvas-wrap collection-stage-wrap">
-          <div className="map-stage-frame collection-map-stage h-[74vh] min-h-[600px] overflow-hidden rounded-[24px]">
+          <div className="map-stage-frame collection-map-stage h-[58vh] min-h-[360px] overflow-hidden rounded-[24px] sm:h-[64vh] sm:min-h-[420px] lg:h-[74vh] lg:min-h-[600px]">
             <LeafletMap
               places={visiblePlaces}
               selectedPlaceId={selectedPlaceId}

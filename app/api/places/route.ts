@@ -1,10 +1,12 @@
 ﻿import { NextResponse } from 'next/server';
 import imageManifest from '@/data/jw-image-manifest.json';
+import imageThumbManifest from '@/data/jw-image-thumb-manifest.json';
 import { places as mockPlaces } from '@/lib/mock-data';
 import { Place } from '@/lib/types';
 import { buildGoogleSheetsCsvUrl, parsePlacesFromGoogleSheetCsv } from '@/lib/google-sheets';
 export const runtime = 'edge';
 const typedImageManifest = imageManifest as Record<string, string[]>;
+const typedImageThumbManifest = imageThumbManifest as Record<string, string[]>;
 
 function buildIdPrefixes(placeId: string): string[] {
   const prefixes = new Set<string>();
@@ -41,14 +43,34 @@ function resolveLocalImagesById(placeId: string): string[] {
   return [...collected];
 }
 
+function resolveLocalThumbsById(placeId: string): string[] {
+  const prefixes = buildIdPrefixes(placeId);
+  if (!prefixes.length) return [];
+
+  const collected = new Set<string>();
+  for (const prefix of prefixes) {
+    const matches = typedImageThumbManifest[prefix];
+    if (matches?.length) {
+      for (const imagePath of matches) {
+        collected.add(imagePath);
+      }
+    }
+  }
+
+  return [...collected];
+}
+
 function withResolvedImages(places: Place[]): Place[] {
   return places.map((place) => {
     const inferredImages = resolveLocalImagesById(place.id);
+    const inferredThumbs = resolveLocalThumbsById(place.id);
     const mergedImages = Array.from(new Set([...inferredImages, ...place.images]));
+    const mergedThumbs = Array.from(new Set(inferredThumbs));
 
     return {
       ...place,
-      images: mergedImages
+      images: mergedImages,
+      thumbnailImages: mergedThumbs.length ? mergedThumbs : mergedImages
     };
   });
 }

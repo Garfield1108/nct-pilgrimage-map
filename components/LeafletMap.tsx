@@ -7,6 +7,7 @@ import L from 'leaflet';
 import { MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM } from '@/lib/config';
 import { Place } from '@/lib/types';
 import { normalizePlaceTypeId, placeTypeGlyphSvgString } from './IconSystem';
+import LocalPlaceImage from './LocalPlaceImage';
 
 type LeafletMapProps = {
   places: Place[];
@@ -84,23 +85,33 @@ function PlaceImagePopup({
   noImageText: string;
 }) {
   const [imageIndex, setImageIndex] = useState(0);
-  const images = place.images ?? [];
-  const image = images[imageIndex];
-  const hasMultipleImages = images.length > 1;
+  const originalImages = place.images ?? [];
+  const previewImages = place.thumbnailImages ?? [];
+  const image = previewImages[imageIndex] ?? originalImages[imageIndex];
+  const originalImage = originalImages[imageIndex];
+  const hasMultipleImages = originalImages.length > 1;
 
   const showPrevious = () => {
-    setImageIndex((current) => (current - 1 + images.length) % images.length);
+    setImageIndex((current) => (current - 1 + originalImages.length) % originalImages.length);
   };
 
   const showNext = () => {
-    setImageIndex((current) => (current + 1) % images.length);
+    setImageIndex((current) => (current + 1) % originalImages.length);
   };
 
   return (
     <div className="memo-popup-card sugar-popup-card collection-popup-card image-popup-card polaroid-popup-card">
       <div className="popup-photo-card polaroid-popup-frame">
         {image ? (
-          <img src={image} alt={place.englishName} className="popup-place-image" />
+          <LocalPlaceImage
+            src={image}
+            fallbackSrc={originalImage}
+            alt={place.englishName}
+            className="popup-place-image"
+            wrapperClassName="popup-place-image-shell"
+            loading="eager"
+            fetchPriority="high"
+          />
         ) : (
           <div className="popup-place-image popup-image-empty">
             <div className="popup-empty-card">
@@ -119,7 +130,7 @@ function PlaceImagePopup({
           <button type="button" onClick={showPrevious} className="popup-image-btn" aria-label="Previous image">
             ‹
           </button>
-          <span className="popup-image-count">{imageIndex + 1}/{images.length}</span>
+          <span className="popup-image-count">{imageIndex + 1}/{originalImages.length}</span>
           <button type="button" onClick={showNext} className="popup-image-btn" aria-label="Next image">
             ›
           </button>
