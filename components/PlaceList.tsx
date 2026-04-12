@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import { KeyboardEvent, MouseEvent } from 'react';
 import { Place, PlaceType } from '@/lib/types';
 import { CandyGlyph, PlaceTypeGlyph, normalizePlaceTypeId } from './IconSystem';
 import LocalPlaceImage from './LocalPlaceImage';
@@ -9,21 +9,18 @@ type Props = {
   places: Place[];
   placeTypes: PlaceType[];
   selectedPlaceId?: string;
-  expandedPlaceId?: string;
   onSelectPlace: (placeId: string) => void;
   emptyText: string;
   favoritePlaceIds?: string[];
   visitedPlaceIds?: string[];
   savedBadgeText?: string;
   visitedBadgeText?: string;
-  activeBadgeText?: string;
   descriptionFallback: string;
   noImageText: string;
   wantLabel?: string;
   visitedLabel?: string;
   onToggleFavorite?: (placeId: string) => void;
   onToggleVisited?: (placeId: string) => void;
-  renderExpandedContent?: (place: Place) => ReactNode;
 };
 
 function SaveIcon({ className = '' }: { className?: string }) {
@@ -52,21 +49,18 @@ export default function PlaceList({
   places,
   placeTypes,
   selectedPlaceId,
-  expandedPlaceId,
   onSelectPlace,
   emptyText,
   favoritePlaceIds = [],
   visitedPlaceIds = [],
   savedBadgeText = 'Saved',
   visitedBadgeText = 'Visited',
-  activeBadgeText = 'Viewing',
   descriptionFallback,
   noImageText,
   wantLabel = 'Want to go',
   visitedLabel = 'Visited',
   onToggleFavorite,
-  onToggleVisited,
-  renderExpandedContent
+  onToggleVisited
 }: Props) {
   const typeMap = new Map(placeTypes.map((t) => [normalizePlaceTypeId(t.id), t.label]));
 
@@ -88,8 +82,7 @@ export default function PlaceList({
   return (
     <div className="scrapbook-grid sugar-route-grid collection-route-grid">
       {places.map((place, idx) => {
-        const active = expandedPlaceId ? place.id === expandedPlaceId : place.id === selectedPlaceId;
-        const isExpanded = place.id === expandedPlaceId;
+        const active = place.id === selectedPlaceId;
         const typeId = normalizePlaceTypeId(place.placeTypeId);
         const typeLabel = typeMap.get(typeId) ?? typeId;
         const variant = `variant-${idx % 4}`;
@@ -102,13 +95,11 @@ export default function PlaceList({
         return (
           <article
             key={place.id}
-            id={`collection-card-${place.id}`}
             role="button"
             tabIndex={0}
-            aria-expanded={isExpanded}
             onClick={() => onSelectPlace(place.id)}
             onKeyDown={(event) => handleKeyDown(event, place.id)}
-            className={`polaroid-card collection-card sugar-card collection-spot-card collage-entry ${variant} cursor-pointer text-left ${active ? 'is-active is-currently-viewing' : ''}`}
+            className={`polaroid-card collection-card sugar-card collection-spot-card collage-entry ${variant} cursor-pointer text-left ${active ? 'is-active' : ''}`}
           >
             <span className="tape-strip sugar-tape collection-tape" />
 
@@ -151,7 +142,6 @@ export default function PlaceList({
                 </span>
 
                 <div className="collection-status-row">
-                  {isExpanded ? <span className="status-chip viewing">{activeBadgeText}</span> : null}
                   {isSaved ? <span className="status-chip saved">{savedBadgeText}</span> : null}
                   {isVisited ? <span className="status-chip visited">{visitedBadgeText}</span> : null}
                 </div>
@@ -190,16 +180,6 @@ export default function PlaceList({
                   </button>
                 ) : null}
               </div>
-
-              {isExpanded && renderExpandedContent ? (
-                <div
-                  className="collection-inline-detail"
-                  onClick={(event) => event.stopPropagation()}
-                  onKeyDown={(event) => event.stopPropagation()}
-                >
-                  {renderExpandedContent(place)}
-                </div>
-              ) : null}
             </div>
           </article>
         );

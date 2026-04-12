@@ -48,33 +48,11 @@ function MapRefreshController({ refreshKey }: { refreshKey: string }) {
   const map = useMap();
 
   useEffect(() => {
-    const invalidate = () => {
-      window.requestAnimationFrame(() => {
-        map.invalidateSize({ animate: false });
-      });
-    };
+    const timer = window.setTimeout(() => {
+      map.invalidateSize({ animate: false });
+    }, 80);
 
-    const timers = [window.setTimeout(invalidate, 80), window.setTimeout(invalidate, 240)];
-    const handleResize = () => invalidate();
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        invalidate();
-      }
-    };
-    const handlePageShow = () => invalidate();
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    window.addEventListener('pageshow', handlePageShow);
-    document.addEventListener('visibilitychange', handleVisibility);
-
-    return () => {
-      timers.forEach((timer) => window.clearTimeout(timer));
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-      window.removeEventListener('pageshow', handlePageShow);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
+    return () => window.clearTimeout(timer);
   }, [map, refreshKey]);
 
   return null;
@@ -179,10 +157,7 @@ export default function LeafletMap({
   placeTypeTextMap,
   popupNoImageText
 }: LeafletMapProps) {
-  const refreshKey = useMemo(
-    () => [places.map((place) => place.id).join('|'), selectedPlaceId ?? '', showRouteLine ? 'route' : 'all'].join('::'),
-    [places, selectedPlaceId, showRouteLine]
-  );
+  const refreshKey = useMemo(() => [places.map((place) => place.id).join('|'), selectedPlaceId ?? ''].join('::'), [places, selectedPlaceId]);
 
   const selectedPlace = useMemo(
     () => places.find((place) => place.id === selectedPlaceId),
