@@ -5240,6 +5240,43 @@ a,
   filter: none !important;
 }
 
+.map-stage-frame .leaflet-container,
+.collection-map-stage .leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.map-stage-frame .leaflet-container img,
+.map-stage-frame .leaflet-tile,
+.map-stage-frame .leaflet-marker-icon,
+.map-stage-frame .leaflet-marker-shadow,
+.collection-map-stage .leaflet-container img,
+.collection-map-stage .leaflet-tile,
+.collection-map-stage .leaflet-marker-icon,
+.collection-map-stage .leaflet-marker-shadow {
+  max-width: none !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.map-stage-frame .leaflet-tile,
+.collection-map-stage .leaflet-tile {
+  visibility: inherit !important;
+}
+
+.map-stage-frame .leaflet-pane,
+.map-stage-frame .leaflet-tile-pane,
+.map-stage-frame .leaflet-map-pane,
+.map-stage-frame .leaflet-marker-pane,
+.map-stage-frame .leaflet-overlay-pane,
+.collection-map-stage .leaflet-pane,
+.collection-map-stage .leaflet-tile-pane,
+.collection-map-stage .leaflet-map-pane,
+.collection-map-stage .leaflet-marker-pane,
+.collection-map-stage .leaflet-overlay-pane {
+  transform-origin: 0 0 !important;
+}
+
 .collection-map-stage .leaflet-tile-pane,
 .collection-map-stage .leaflet-tile-loaded {
   opacity: 1 !important;
@@ -6252,6 +6289,8 @@ body,
 }
 
 @media (max-width: 639px) {
+  .filter-ribbon,
+  .keepsake-filter-ribbon,
   .filter-grid,
   .filter-ribbon-grid,
   .single-filter-grid,
@@ -6290,6 +6329,34 @@ body,
     flex: 0 0 auto !important;
     flex-shrink: 0 !important;
     max-width: none !important;
+  }
+
+  .map-led-stage,
+  .collection-stage,
+  .map-canvas-wrap,
+  .collection-stage-wrap,
+  .map-stage-frame,
+  .collection-map-stage {
+    min-width: 0 !important;
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    perspective: none !important;
+    contain: none !important;
+    will-change: auto !important;
+  }
+
+  .map-led-stage,
+  .collection-stage,
+  .map-canvas-wrap,
+  .collection-stage-wrap {
+    overflow: visible !important;
+  }
+
+  .map-stage-frame,
+  .collection-map-stage {
+    height: 56vh !important;
+    min-height: 400px !important;
   }
 }
 /* mobile-responsive-fixes-end */

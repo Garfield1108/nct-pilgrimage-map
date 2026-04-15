@@ -263,6 +263,17 @@ export default function LeafletMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         opacity={0.96}
+        updateWhenIdle
+        keepBuffer={3}
+        eventHandlers={{
+          tileerror: (event) => {
+            const tileEvent = event as unknown as { coords?: unknown; tile?: HTMLImageElement };
+            console.warn('[Leaflet tileerror]', {
+              coords: tileEvent.coords,
+              src: tileEvent.tile?.src
+            });
+          }
+        }}
       />
 
       <MapResizer refreshKey={refreshKey} />
