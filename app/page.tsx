@@ -96,6 +96,18 @@ export default function HomePage() {
   }, [allPlaces, favoritePlaceIds, visitedPlaceIds]);
 
   const visiblePlaces = viewMode === 'route' ? myPilgrimagePlaces : filteredPlaces;
+  const mapLayoutRefreshKey = useMemo(
+    () =>
+      [
+        locale,
+        viewMode,
+        filters.keyword.trim(),
+        filters.placeTypeIds.join('|'),
+        selectedPlaceId ?? '',
+        visiblePlaces.map((place) => place.id).join('|')
+      ].join('::'),
+    [locale, viewMode, filters.keyword, filters.placeTypeIds, selectedPlaceId, visiblePlaces]
+  );
 
   useEffect(() => {
     if (!visiblePlaces.length) {
@@ -214,7 +226,7 @@ export default function HomePage() {
 
       <section className="map-led-stage stage-shell sugar-stage collection-stage p-2.5">
         <div className="map-canvas-wrap collection-stage-wrap">
-          <div className="map-stage-frame collection-map-stage h-[58vh] min-h-[360px] overflow-hidden rounded-[24px] sm:h-[64vh] sm:min-h-[420px] lg:h-[74vh] lg:min-h-[600px]">
+          <div className="map-stage-frame collection-map-stage h-[56vh] min-h-[400px] overflow-hidden rounded-[24px] sm:h-[60vh] sm:min-h-[420px] lg:h-[74vh] lg:min-h-[600px]">
             <LeafletMap
               places={visiblePlaces}
               selectedPlaceId={selectedPlaceId}
@@ -231,6 +243,7 @@ export default function HomePage() {
               popupOverline={t.popupOverline}
               popupNote={t.popupNote}
               popupNoImageText={t.noImageText}
+              layoutRefreshKey={mapLayoutRefreshKey}
             />
           </div>
 

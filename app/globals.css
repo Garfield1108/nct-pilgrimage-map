@@ -6252,21 +6252,35 @@ body,
 }
 
 @media (max-width: 639px) {
+  .filter-grid,
+  .filter-ribbon-grid,
+  .single-filter-grid,
+  .filter-group-card,
   .collection-chip-section,
   .ribbon-group-type,
   .ribbon-group-full {
+    min-width: 0 !important;
     overflow: visible !important;
   }
 
   .chip-track,
   .collection-chip-track {
     display: flex !important;
-    flex-wrap: wrap !important;
-    overflow-x: visible !important;
-    overflow-y: visible !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     gap: 8px !important;
-    padding-right: 0 !important;
-    padding-bottom: 0 !important;
+    padding-right: 10px !important;
+    padding-bottom: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  .chip-track::-webkit-scrollbar,
+  .collection-chip-track::-webkit-scrollbar {
+    display: none !important;
   }
 
   .collection-chip-track .sticker-filter,
@@ -6274,7 +6288,8 @@ body,
   .sticker-filter,
   .keepsake-chip {
     flex: 0 0 auto !important;
-    max-width: 100% !important;
+    flex-shrink: 0 !important;
+    max-width: none !important;
   }
 }
 /* mobile-responsive-fixes-end */

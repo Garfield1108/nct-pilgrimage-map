@@ -25,6 +25,7 @@ type LeafletMapProps = {
   popupOverline: string;
   popupNote: string;
   popupNoImageText: string;
+  layoutRefreshKey?: string;
 };
 
 function createMarkerIcon(active: boolean, placeTypeId: string, favorited: boolean, visited: boolean) {
@@ -44,7 +45,7 @@ function createMarkerIcon(active: boolean, placeTypeId: string, favorited: boole
   });
 }
 
-function MapRefreshController({ refreshKey }: { refreshKey: string }) {
+function MapResizer({ refreshKey }: { refreshKey: string }) {
   const map = useMap();
 
   useEffect(() => {
@@ -53,7 +54,16 @@ function MapRefreshController({ refreshKey }: { refreshKey: string }) {
     let frameId = 0;
     const timers: number[] = [];
     const container = map.getContainer();
-    const observedTarget = container.parentElement ?? container;
+    const observedTargets = Array.from(
+      new Set(
+        [
+          container,
+          container.parentElement,
+          container.closest('.collection-map-stage'),
+          container.closest('.map-stage-frame')
+        ].filter(Boolean)
+      )
+    ) as Element[];
 
     const runInvalidate = () => {
       frameId = window.requestAnimationFrame(() => {
@@ -61,7 +71,7 @@ function MapRefreshController({ refreshKey }: { refreshKey: string }) {
       });
     };
 
-    const scheduleInvalidate = (delays = [0, 180, 320]) => {
+    const scheduleInvalidate = (delays = [0, 150, 300, 520]) => {
       timers.push(
         ...delays.map((delay) =>
           window.setTimeout(() => {
@@ -71,32 +81,34 @@ function MapRefreshController({ refreshKey }: { refreshKey: string }) {
       );
     };
 
-    const handleResize = () => scheduleInvalidate([180, 320]);
+    const handleResize = () => scheduleInvalidate([120, 260, 420]);
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        scheduleInvalidate([120, 260]);
+        scheduleInvalidate([120, 260, 420]);
       }
     };
-    const handlePageShow = () => scheduleInvalidate([120, 260]);
+    const handlePageShow = () => scheduleInvalidate([120, 260, 420]);
+    const handleWindowLoad = () => scheduleInvalidate([0, 180, 360]);
 
     const resizeObserver =
       typeof ResizeObserver !== 'undefined'
         ? new ResizeObserver(() => {
-            scheduleInvalidate([120, 260]);
+            scheduleInvalidate([120, 260, 420]);
           })
         : null;
 
-    resizeObserver?.observe(observedTarget);
+    observedTargets.forEach((target) => resizeObserver?.observe(target));
     map.whenReady(() => {
-      scheduleInvalidate([0, 160, 300]);
+      scheduleInvalidate([0, 150, 300, 520]);
     });
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleResize);
     window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('load', handleWindowLoad);
     document.addEventListener('visibilitychange', handleVisibility);
 
-    scheduleInvalidate([0, 160, 300]);
+    scheduleInvalidate([0, 150, 300, 520]);
 
     return () => {
       if (frameId) {
@@ -107,6 +119,7 @@ function MapRefreshController({ refreshKey }: { refreshKey: string }) {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
       window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('load', handleWindowLoad);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [map, refreshKey]);
@@ -211,11 +224,13 @@ export default function LeafletMap({
   routePlaceIds,
   showRouteLine,
   placeTypeTextMap,
-  popupNoImageText
+  popupNoImageText,
+  layoutRefreshKey = ''
 }: LeafletMapProps) {
   const refreshKey = useMemo(
-    () => [places.map((place) => place.id).join('|'), selectedPlaceId ?? '', showRouteLine ? 'route' : 'all'].join('::'),
-    [places, selectedPlaceId, showRouteLine]
+    () =>
+      [places.map((place) => place.id).join('|'), selectedPlaceId ?? '', showRouteLine ? 'route' : 'all', layoutRefreshKey].join('::'),
+    [places, selectedPlaceId, showRouteLine, layoutRefreshKey]
   );
 
   const selectedPlace = useMemo(
@@ -250,7 +265,7 @@ export default function LeafletMap({
         opacity={0.96}
       />
 
-      <MapRefreshController refreshKey={refreshKey} />
+      <MapResizer refreshKey={refreshKey} />
       <MapFocusController selectedPlace={selectedPlace} />
 
       {routePolyline.length > 1 ? (
