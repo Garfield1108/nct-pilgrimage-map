@@ -91,6 +91,11 @@ export default function PlaceList({
         const blurb = place.description || descriptionFallback;
         const coverImage = place.thumbnailImages?.[0] ?? place.images[0];
         const fullCoverImage = place.images[0];
+        const emptyImageFallback = (
+          <div className="collection-no-image-card collection-card-image-shell rounded-xl border border-dashed border-[#dccfd7] bg-[#fffafc]">
+            <p className="collection-no-image-note">{noImageText}</p>
+          </div>
+        );
 
         return (
           <article
@@ -109,19 +114,14 @@ export default function PlaceList({
                   src={coverImage}
                   fallbackSrc={fullCoverImage}
                   alt={place.englishName}
-                  className="h-36 w-full rounded-xl bg-[#fffafc] object-contain"
+                  className="h-full w-full rounded-xl bg-[#fffafc] object-contain object-center"
                   wrapperClassName="collection-card-image-shell"
                   loading="lazy"
                   fetchPriority="low"
+                  emptyFallback={emptyImageFallback}
                 />
               ) : (
-                <div className="collection-no-image-card h-36 w-full rounded-xl border border-dashed border-[#dccfd7] bg-[#fffafc]">
-                  <span className="collection-no-image-type">
-                    <PlaceTypeGlyph placeTypeId={typeId} className="h-4 w-4" />
-                    {typeLabel}
-                  </span>
-                  <p className="collection-no-image-note">{noImageText}</p>
-                </div>
+                emptyImageFallback
               )}
               <span className="collection-index sugar-index">{String(idx + 1).padStart(2, '0')}</span>
               <span className="collection-candy-stamp">

@@ -143,14 +143,9 @@ function MapFocusController({ selectedPlace }: { selectedPlace?: Place }) {
 
 function PlaceImagePopup({
   place,
-  placeTypeId,
-  placeTypeLabel,
   noImageText
 }: {
   place: Place;
-  activeMemberId: string | null;
-  placeTypeId: string;
-  placeTypeLabel: string;
   noImageText: string;
 }) {
   const [imageIndex, setImageIndex] = useState(0);
@@ -159,6 +154,13 @@ function PlaceImagePopup({
   const image = previewImages[imageIndex] ?? originalImages[imageIndex];
   const originalImage = originalImages[imageIndex];
   const hasMultipleImages = originalImages.length > 1;
+  const emptyState = (
+    <div className="popup-place-image popup-image-empty">
+      <div className="popup-empty-card">
+        <p className="popup-empty-note">{noImageText}</p>
+      </div>
+    </div>
+  );
 
   const showPrevious = () => {
     setImageIndex((current) => (current - 1 + originalImages.length) % originalImages.length);
@@ -180,17 +182,10 @@ function PlaceImagePopup({
             wrapperClassName="popup-place-image-shell"
             loading="eager"
             fetchPriority="high"
+            emptyFallback={emptyState}
           />
         ) : (
-          <div className="popup-place-image popup-image-empty">
-            <div className="popup-empty-card">
-              <span className="popup-empty-type">
-                <span dangerouslySetInnerHTML={{ __html: miniGlyphHtml(placeTypeId) }} />
-                {placeTypeLabel}
-              </span>
-              <p className="popup-empty-note">{noImageText}</p>
-            </div>
-          </div>
+          emptyState
         )}
       </div>
 
@@ -207,11 +202,6 @@ function PlaceImagePopup({
       ) : null}
     </div>
   );
-}
-
-function miniGlyphHtml(placeTypeId: string): string {
-  const glyph = placeTypeGlyphSvgString(normalizePlaceTypeId(placeTypeId), '#5c4b43');
-  return `<span class="popup-mini-glyph">${glyph}</span>`;
 }
 
 export default function LeafletMap({
@@ -299,7 +289,6 @@ export default function LeafletMap({
         const favorited = favoritePlaceIds.includes(place.id);
         const visited = visitedPlaceIds.includes(place.id);
         const placeTypeId = normalizePlaceTypeId(place.placeTypeId);
-        const placeTypeLabel = placeTypeTextMap?.[placeTypeId] ?? placeTypeId;
 
         return (
           <Marker
@@ -311,9 +300,6 @@ export default function LeafletMap({
             <Popup className="custom-popup memo-popup sugar-popup collection-popup image-popup" autoPan maxWidth={270} minWidth={210}>
               <PlaceImagePopup
                 place={place}
-                activeMemberId={activeMemberId}
-                placeTypeId={placeTypeId}
-                placeTypeLabel={placeTypeLabel}
                 noImageText={popupNoImageText}
               />
             </Popup>
