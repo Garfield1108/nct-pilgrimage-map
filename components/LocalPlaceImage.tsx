@@ -43,6 +43,15 @@ export default function LocalPlaceImage({
         src={currentSrc}
         alt={alt}
         className={`local-place-image ${className}`}
+        style={{
+          width: '100%',
+          height: '100%',
+          maxWidth: '100%',
+          maxHeight: '100%',
+          objectFit: 'contain',
+          objectPosition: 'center',
+          transform: 'none'
+        }}
         loading={loading}
         decoding="async"
         fetchPriority={fetchPriority}
