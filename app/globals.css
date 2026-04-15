@@ -6107,8 +6107,10 @@ body,
   }
 
   .collection-search-shell {
-    display: flex !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
     align-items: center !important;
+    column-gap: 8px !important;
     overflow: hidden !important;
     border-radius: 26px !important;
     padding: 4px !important;
@@ -6154,7 +6156,8 @@ body,
     justify-content: center !important;
     padding-inline: 12px !important;
     white-space: nowrap !important;
-    margin-left: auto !important;
+    justify-self: end !important;
+    margin-left: 0 !important;
   }
 
   .search-action-btn:hover,
@@ -6243,8 +6246,8 @@ body,
   .search-action-btn,
   .collection-search-btn {
     height: 42px !important;
-    min-width: 64px !important;
-    padding-inline: 10px !important;
+    min-width: 56px !important;
+    padding-inline: 8px !important;
   }
 }
 /* mobile-responsive-fixes-end */
