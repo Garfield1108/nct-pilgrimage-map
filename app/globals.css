@@ -6250,6 +6250,33 @@ body,
     padding-inline: 8px !important;
   }
 }
+
+@media (max-width: 639px) {
+  .collection-chip-section,
+  .ribbon-group-type,
+  .ribbon-group-full {
+    overflow: visible !important;
+  }
+
+  .chip-track,
+  .collection-chip-track {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    gap: 8px !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .collection-chip-track .sticker-filter,
+  .collection-chip-track .keepsake-chip,
+  .sticker-filter,
+  .keepsake-chip {
+    flex: 0 0 auto !important;
+    max-width: 100% !important;
+  }
+}
 /* mobile-responsive-fixes-end */
 
 .local-place-image-shell {
