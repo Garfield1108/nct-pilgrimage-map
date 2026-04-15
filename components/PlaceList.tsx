@@ -114,7 +114,7 @@ export default function PlaceList({
                   src={coverImage}
                   fallbackSrc={fullCoverImage}
                   alt={place.englishName}
-                  className="h-full w-full rounded-xl bg-[#fffafc] object-contain object-center"
+                  className="collection-place-image rounded-xl bg-[#fffafc]"
                   wrapperClassName="collection-card-image-shell"
                   loading="lazy"
                   fetchPriority="low"

@@ -5679,8 +5679,8 @@ body,
 
 .popup-place-image {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: auto;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -5688,6 +5688,7 @@ body,
   border-radius: 15px;
   background: transparent;
   transform: none !important;
+  margin: auto;
 }
 
 .popup-image-empty {
@@ -5844,8 +5845,8 @@ body,
 }
 
 .polaroid-popup-frame .popup-place-image {
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: auto;
   max-width: 100%;
   max-height: 100%;
   border-radius: 6px;
@@ -6369,16 +6370,19 @@ body,
 
 .local-place-image-shell {
   position: relative;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
   background: linear-gradient(180deg, #fffdfb 0%, #fff6f9 100%);
 }
 
 .local-place-image {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: auto;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -6386,6 +6390,7 @@ body,
   opacity: 0;
   transition: opacity 180ms ease;
   transform: none !important;
+  margin: auto;
 }
 
 .local-place-image-shell.is-loaded .local-place-image {
@@ -6402,8 +6407,10 @@ body,
 }
 
 .popup-place-image-shell {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   box-sizing: border-box;
   height: clamp(210px, 42vh, 290px);
   min-height: 210px;
@@ -6416,8 +6423,9 @@ body,
   width: 100%;
   height: 9rem;
   min-height: 9rem;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
   padding: 10px;
   border-radius: 0.75rem;
@@ -6426,14 +6434,16 @@ body,
 
 .collection-popup .local-place-image,
 .collection-popup .popup-place-image,
-.collection-photo-card .local-place-image {
-  width: 100% !important;
-  height: 100% !important;
+.collection-photo-card .local-place-image,
+.collection-photo-card .collection-place-image {
+  width: auto !important;
+  height: auto !important;
   max-width: 100% !important;
   max-height: 100% !important;
   object-fit: contain !important;
   object-position: center !important;
   transform: none !important;
+  margin: auto !important;
 }
 
 @keyframes local-image-shimmer {
