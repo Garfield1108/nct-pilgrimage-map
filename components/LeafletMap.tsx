@@ -48,11 +48,67 @@ function MapRefreshController({ refreshKey }: { refreshKey: string }) {
   const map = useMap();
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      map.invalidateSize({ animate: false });
-    }, 80);
+    if (typeof window === 'undefined') return;
 
-    return () => window.clearTimeout(timer);
+    let frameId = 0;
+    const timers: number[] = [];
+    const container = map.getContainer();
+    const observedTarget = container.parentElement ?? container;
+
+    const runInvalidate = () => {
+      frameId = window.requestAnimationFrame(() => {
+        map.invalidateSize({ animate: false });
+      });
+    };
+
+    const scheduleInvalidate = (delays = [0, 180, 320]) => {
+      timers.push(
+        ...delays.map((delay) =>
+          window.setTimeout(() => {
+            runInvalidate();
+          }, delay)
+        )
+      );
+    };
+
+    const handleResize = () => scheduleInvalidate([180, 320]);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        scheduleInvalidate([120, 260]);
+      }
+    };
+    const handlePageShow = () => scheduleInvalidate([120, 260]);
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => {
+            scheduleInvalidate([120, 260]);
+          })
+        : null;
+
+    resizeObserver?.observe(observedTarget);
+    map.whenReady(() => {
+      scheduleInvalidate([0, 160, 300]);
+    });
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    window.addEventListener('pageshow', handlePageShow);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    scheduleInvalidate([0, 160, 300]);
+
+    return () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+      timers.forEach((timer) => window.clearTimeout(timer));
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      window.removeEventListener('pageshow', handlePageShow);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [map, refreshKey]);
 
   return null;
@@ -157,7 +213,10 @@ export default function LeafletMap({
   placeTypeTextMap,
   popupNoImageText
 }: LeafletMapProps) {
-  const refreshKey = useMemo(() => [places.map((place) => place.id).join('|'), selectedPlaceId ?? ''].join('::'), [places, selectedPlaceId]);
+  const refreshKey = useMemo(
+    () => [places.map((place) => place.id).join('|'), selectedPlaceId ?? '', showRouteLine ? 'route' : 'all'].join('::'),
+    [places, selectedPlaceId, showRouteLine]
+  );
 
   const selectedPlace = useMemo(
     () => places.find((place) => place.id === selectedPlaceId),

@@ -6128,8 +6128,9 @@ body,
     width: auto !important;
     min-width: 0 !important;
     height: 50px !important;
+    font-size: 13px !important;
     padding-right: 14px !important;
-    padding-left: 42px !important;
+    padding-left: 38px !important;
     box-sizing: border-box !important;
   }
 
@@ -6146,11 +6147,12 @@ body,
     right: auto !important;
     transform: none !important;
     flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
     width: auto !important;
-    min-width: 78px !important;
+    min-width: 72px !important;
     height: 44px !important;
     justify-content: center !important;
-    padding-inline: 16px !important;
+    padding-inline: 12px !important;
     white-space: nowrap !important;
     margin-left: auto !important;
   }
@@ -6241,8 +6243,8 @@ body,
   .search-action-btn,
   .collection-search-btn {
     height: 42px !important;
-    min-width: 72px !important;
-    padding-inline: 14px !important;
+    min-width: 64px !important;
+    padding-inline: 10px !important;
   }
 }
 /* mobile-responsive-fixes-end */
