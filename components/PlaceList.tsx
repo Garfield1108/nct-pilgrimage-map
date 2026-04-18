@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { KeyboardEvent, MouseEvent } from 'react';
+import { Locale } from '@/lib/i18n';
 import { Place, PlaceType } from '@/lib/types';
 import { CandyGlyph, PlaceTypeGlyph, normalizePlaceTypeId } from './IconSystem';
 import LocalPlaceImage from './LocalPlaceImage';
@@ -17,6 +18,7 @@ type Props = {
   visitedBadgeText?: string;
   descriptionFallback: string;
   noImageText: string;
+  locale: Locale;
   wantLabel?: string;
   visitedLabel?: string;
   onToggleFavorite?: (placeId: string) => void;
@@ -57,6 +59,7 @@ export default function PlaceList({
   visitedBadgeText = 'Visited',
   descriptionFallback,
   noImageText,
+  locale,
   wantLabel = 'Want to go',
   visitedLabel = 'Visited',
   onToggleFavorite,
@@ -88,7 +91,7 @@ export default function PlaceList({
         const variant = `variant-${idx % 4}`;
         const isSaved = favoritePlaceIds.includes(place.id);
         const isVisited = visitedPlaceIds.includes(place.id);
-        const blurb = place.description || descriptionFallback;
+        const blurb = (locale === 'zh' ? place.descriptionZh ?? place.description : place.description) || descriptionFallback;
         const coverImage = place.thumbnailImages?.[0] ?? place.images[0];
         const fullCoverImage = place.images[0];
         const emptyImageFallback = (

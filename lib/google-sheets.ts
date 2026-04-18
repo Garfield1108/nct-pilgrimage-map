@@ -138,8 +138,35 @@ function sourceNoteFromRow(row: Record<string, string>): string | undefined {
   return parts.length ? parts.join(' | ') : undefined;
 }
 
-function buildDescriptionFromRow(row: Record<string, string>): string {
-  return getField(row, 'description');
+function buildDescriptionsFromRow(row: Record<string, string>): { description: string; descriptionZh?: string } {
+  const englishDescription = getField(
+    row,
+    'descriptionEn',
+    'description_en',
+    'englishDescription',
+    'english_description',
+    'noteEn',
+    'note_en',
+    'notesEn',
+    'notes_en'
+  );
+  const chineseDescription = getField(
+    row,
+    'descriptionZh',
+    'description_zh',
+    'descriptionCn',
+    'description_cn',
+    'noteZh',
+    'note_zh',
+    'notesZh',
+    'notes_zh'
+  );
+  const genericDescription = getField(row, 'description', 'note', 'notes');
+
+  return {
+    description: englishDescription || genericDescription,
+    descriptionZh: chineseDescription || undefined
+  };
 }
 
 function rowToPlace(row: Record<string, string>, index: number): Place | null {
@@ -162,6 +189,7 @@ function rowToPlace(row: Record<string, string>, index: number): Place | null {
   const englishAddress = getField(row, 'englishAddress', 'address', 'address_zh', 'address_cn');
   const displayAddress = englishAddress || koreanAddress;
   const name = getField(row, 'name') || englishName;
+  const { description, descriptionZh } = buildDescriptionsFromRow(row);
 
   return {
     id: getField(row, 'id') || `sheet-place-${index + 1}`,
@@ -175,8 +203,8 @@ function rowToPlace(row: Record<string, string>, index: number): Place | null {
     longitude,
     memberIds,
     placeTypeId,
-    description: buildDescriptionFromRow(row),
-    descriptionZh: getField(row, 'descriptionZh') || undefined,
+    description,
+    descriptionZh,
     moodTags: toMoodTags(getField(row, 'moodTags')),
     images,
     sourceNote: sourceNoteFromRow(row)

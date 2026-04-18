@@ -170,7 +170,7 @@ export default function HomePage() {
             English EN
           </button>
           <button type="button" className={`snoopy-nav-tab ${viewMode === 'all' ? 'active' : ''}`} onClick={() => setViewMode('all')}>
-            地图
+            {t.mapView}
           </button>
           <button type="button" className={`snoopy-nav-tab ${viewMode === 'route' ? 'active' : ''}`} onClick={() => setViewMode('route')}>
             {t.route}
@@ -280,6 +280,7 @@ export default function HomePage() {
             visitedBadgeText={t.visitedBadge}
             descriptionFallback={t.descriptionFallback}
             noImageText={t.noImageText}
+            locale={locale}
             wantLabel={t.wantToGo}
             visitedLabel={t.visited}
             onToggleFavorite={onToggleFavoriteById}
