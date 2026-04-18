@@ -165,7 +165,7 @@ function buildDescriptionsFromRow(row: Record<string, string>): { description: s
 
   return {
     description: englishDescription || genericDescription,
-    descriptionZh: chineseDescription || undefined
+    descriptionZh: chineseDescription || (englishDescription ? genericDescription || undefined : undefined)
   };
 }
 
